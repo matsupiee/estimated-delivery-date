@@ -117,21 +117,15 @@ export const REGION_COLORS: Record<RegionName, string> = {
   沖縄: "#3abf9a",
 } as const;
 
-export type RegionGridPlacement = {
-  columnStart: number;
-  columnEnd: number;
-  rowStart: number;
-  rowEnd: number;
-};
-
-export const REGION_GRID_PLACEMENT: Record<RegionName, RegionGridPlacement> = {
-  北海道: { columnStart: 8, columnEnd: 12, rowStart: 1, rowEnd: 4 },
-  東北: { columnStart: 7, columnEnd: 11, rowStart: 4, rowEnd: 7 },
-  関東: { columnStart: 6, columnEnd: 10, rowStart: 6, rowEnd: 9 },
-  中部: { columnStart: 5, columnEnd: 9, rowStart: 8, rowEnd: 11 },
-  関西: { columnStart: 4, columnEnd: 8, rowStart: 10, rowEnd: 13 },
-  中国: { columnStart: 3, columnEnd: 7, rowStart: 12, rowEnd: 15 },
-  四国: { columnStart: 4, columnEnd: 6, rowStart: 15, rowEnd: 17 },
-  九州: { columnStart: 2, columnEnd: 6, rowStart: 16, rowEnd: 19 },
-  沖縄: { columnStart: 9, columnEnd: 11, rowStart: 19, rowEnd: 21 },
+export const REGION_SVG_PATHS: Record<RegionName, string> = {
+  北海道:
+    "M476 91 L517 91 L557 131 L577 131 L577 179 L488 179 L488 194 L452 194 L452 159 L476 145 Z",
+  東北: "M451 217 L477 217 L477 224 L491 224 L491 208 L508 208 L508 226 L526 239 L526 264 L519 271 L519 325 L461 325 L458 307 L458 288 L451 288 Z",
+  関東: "M438 325 L519 325 L519 353 L526 369 L526 427 L504 427 L504 396 L487 396 L487 423 L459 423 L459 405 L425 399 L425 377 L438 377 Z",
+  中部: "M341 351 L360 338 L360 313 L377 313 L377 331 L389 331 L430 301 L420 293 L417 296 L407 296 L418 285 L429 285 L422 292 L433 300 L451 288 L458 288 L458 310 L461 324 L437 324 L437 375 L425 375 L425 400 L403 400 L403 344 L378 344 L378 372 L324 372 L324 362 L341 362 Z M379 345 L402 345 L402 401 L425 401 L458 406 L458 424 L468 424 L468 436 L449 436 L449 425 L442 418 L424 436 L378 436 L378 414 L365 414 L365 450 L346 450 L346 394 L371 394 L371 373 L379 373 Z",
+  関西: "M274 358 L323 358 L323 373 L371 373 L371 394 L344 394 L344 450 L301 450 L301 408 L274 408 Z",
+  中国: "M210 358 L274 358 L274 408 L187 408 L187 378 L209 359 Z",
+  四国: "M195 421 L227 414 L228 423 L247 423 L247 418 L289 418 L289 468 L267 468 L257 459 L226 459 L216 467 L190 467 L190 423 Z",
+  九州: "M77 378 L150 378 L179 398 L179 422 L171 429 L171 460 L146 473 L146 453 L131 453 L131 463 L114 463 L114 431 L122 431 L122 411 L119 404 L112 404 L99 404 L99 419 L76 419 Z",
+  沖縄: "M70 110 L140 110 L120 160 L55 160 Z",
 } as const;

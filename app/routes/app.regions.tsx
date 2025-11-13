@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type {
   ActionFunctionArgs,
   HeadersFunction,
@@ -12,10 +12,15 @@ import {
   PREFECTURES,
   REGIONS,
   REGION_COLORS,
-  REGION_GRID_PLACEMENT,
   type RegionName,
 } from "../lib/constants";
+import { RegionMap } from "../components/RegionMap";
 import { prisma } from "app/servers/db.server";
+
+const REGION_ENTRIES = Object.entries(REGIONS) as [
+  RegionName,
+  readonly string[]
+][];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
@@ -144,10 +149,14 @@ export default function Regions() {
     }
   };
 
-  const regionEntries = Object.entries(REGIONS) as [
-    RegionName,
-    readonly string[]
-  ][];
+  const regionValueMap = useMemo(
+    () =>
+      REGION_ENTRIES.reduce((acc, [region]) => {
+        acc[region] = getRegionInputValue(region);
+        return acc;
+      }, {} as Record<RegionName, number | "">),
+    [regionalMap]
+  );
 
   return (
     <s-page heading="地域別配送日数">
@@ -182,8 +191,8 @@ export default function Regions() {
                 gap: "16px",
               }}
             >
-              {regionEntries.map(([region, prefectures]) => {
-                const inputValue = getRegionInputValue(region);
+              {REGION_ENTRIES.map(([region, prefectures]) => {
+                const inputValue = regionValueMap[region];
                 return (
                   <div
                     key={region}
@@ -246,7 +255,9 @@ export default function Regions() {
                           regionInputRefs.current[region] = el;
                         }}
                         type="number"
-                        value={inputValue === "" ? "" : String(inputValue)}
+                        value={
+                          inputValue === "" ? "" : String(inputValue ?? "")
+                        }
                         onChange={(e) =>
                           handleRegionChange(region, e.target.value)
                         }
@@ -281,55 +292,21 @@ export default function Regions() {
                 style={{
                   border: "1px solid #e1e3e5",
                   borderRadius: "16px",
-                  padding: "20px",
-                  background:
-                    "linear-gradient(180deg, rgba(255,255,255,0.9), rgba(246,249,255,0.9))",
-                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
+                  padding: "16px",
+                  background: "#f8fbff",
                 }}
               >
                 <div
                   style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(12, minmax(0, 1fr))",
-                    gridAutoRows: "32px",
-                    gap: "6px",
-                    height: "420px",
+                    width: "100%",
+                    aspectRatio: "6 / 5",
+                    minHeight: "360px",
                   }}
                 >
-                  {regionEntries.map(([region]) => {
-                    const placement = REGION_GRID_PLACEMENT[region];
-                    const inputValue = getRegionInputValue(region);
-                    const hasValue = inputValue !== "";
-                    return (
-                      <button
-                        key={region}
-                        type="button"
-                        onClick={() => focusRegionInput(region)}
-                        style={{
-                          gridColumn: `${placement.columnStart} / ${placement.columnEnd}`,
-                          gridRow: `${placement.rowStart} / ${placement.rowEnd}`,
-                          border: "none",
-                          borderRadius: "10px",
-                          background: REGION_COLORS[region],
-                          color: "#fff",
-                          fontWeight: 600,
-                          fontSize: "14px",
-                          boxShadow:
-                            "0 4px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.3)",
-                          cursor: "pointer",
-                          opacity: hasValue ? 1 : 0.65,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          textShadow: "0 1px 2px rgba(0,0,0,0.2)",
-                          transition: "transform 0.15s ease, opacity 0.2s ease",
-                        }}
-                        aria-label={`${region}の配送日数入力に移動`}
-                      >
-                        {region}
-                      </button>
-                    );
-                  })}
+                  <RegionMap
+                    regionValues={regionValueMap}
+                    onSelect={focusRegionInput}
+                  />
                 </div>
                 <div
                   style={{
