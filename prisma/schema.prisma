@@ -13,6 +13,8 @@ datasource db {
   url      = "file:dev.sqlite"
 }
 
+// Shopifyアプリの認証情報を保存するために使われる
+// 顧客がアプリをインストール→Shopifyから認証トークンを取得→このテーブルに保存
 model Session {
   id            String    @id
   shop          String
@@ -29,4 +31,60 @@ model Session {
   locale        String?
   collaborator  Boolean?  @default(false)
   emailVerified Boolean?  @default(false)
+}
+
+// 発送設定（ショップごと）
+model ShippingConfig {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  shop String @unique
+
+  // 発送準備日数(注文から何日後に発送できるかを設定)
+  preparationDays Int @default(1)
+}
+
+// 地域別配送日数
+model RegionalShippingTime {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  shop         String
+  prefecture   String // 都道府県名
+  shippingDays Int // 配送日数
+
+  @@unique([shop, prefecture])
+  @@index([shop])
+}
+
+// 発送休業日（ショップごとのカスタム休業日）
+model NonShippingDay {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  shop      String
+  date      DateTime // 休業日
+  reason    String? // 理由（臨時休業、夏季休業など）
+  dayOfWeek Int? // 0=日曜, 6=土曜（定期休業用、nullなら単発休業）
+
+  @@unique([shop, date])
+  @@index([shop, date])
+}
+
+// 日本の祝日マスタ（全ショップ共通）
+model Holiday {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  country String // 国名
+  date    DateTime // 祝日の日付
+  name    String // 祝日名（元日、成人の日など）
+  year    Int // 年
+
+  @@unique([country, date])
+  @@index([year])
 }
