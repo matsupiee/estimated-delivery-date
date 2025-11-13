@@ -6,10 +6,10 @@ import type {
 } from "react-router";
 import { useFetcher, useLoaderData } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
-import { authenticate } from "../shopify.server";
+import { authenticate } from "../servers/shopify.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
-import { PREFECTURES } from "../lib/delivery-calculator";
-import prisma from "../db.server";
+import { PREFECTURES } from "../lib/constants";
+import { prisma } from "app/servers/db.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);

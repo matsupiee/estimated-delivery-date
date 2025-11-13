@@ -1,6 +1,7 @@
 import type { LoaderFunctionArgs } from "react-router";
-import { authenticate } from "../shopify.server";
-import { calculateDeliveryDate } from "../lib/delivery-calculator";
+import { authenticate } from "../servers/shopify.server";
+import { calculateDeliveryDate } from "../servers/delivery-calculator.server";
+import { formatJapaneseDate } from "app/lib/format-date";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
@@ -38,15 +39,3 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     );
   }
 };
-
-/**
- * 日付を日本語形式にフォーマット
- * 例: 2025-11-20 → "11月20日（木）"
- */
-function formatJapaneseDate(date: Date): string {
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const dayOfWeek = ["日", "月", "火", "水", "木", "金", "土"][date.getDay()];
-
-  return `${month}月${day}日（${dayOfWeek}）`;
-}
