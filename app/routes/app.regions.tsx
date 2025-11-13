@@ -8,7 +8,7 @@ import { useFetcher, useLoaderData } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../servers/shopify.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
-import { PREFECTURES } from "../lib/constants";
+import { PREFECTURES, REGIONS, type RegionName } from "../lib/constants";
 import { prisma } from "app/servers/db.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -87,12 +87,27 @@ export default function Regions() {
     fetcher.submit(formData, { method: "POST" });
   };
 
-  const handleChange = (prefecture: string, value: string) => {
-    const days = parseInt(value, 10) || 0;
-    setRegionalMap((prev) => ({
-      ...prev,
-      [prefecture]: days,
-    }));
+  const handleRegionChange = (region: RegionName, value: string) => {
+    const parsed = parseInt(value, 10);
+    const days = Number.isNaN(parsed) ? 0 : parsed;
+    setRegionalMap((prev) => {
+      const next = { ...prev };
+      REGIONS[region].forEach((prefecture) => {
+        next[prefecture] = days;
+      });
+      return next;
+    });
+  };
+
+  const getRegionInputValue = (region: RegionName) => {
+    const values = REGIONS[region]
+      .map((prefecture) => regionalMap[prefecture])
+      .filter((value): value is number => typeof value === "number");
+    if (values.length === 0) {
+      return "";
+    }
+    const first = values[0];
+    return values.every((value) => value === first) ? first : "";
   };
 
   // デフォルト値を一括設定
@@ -118,7 +133,7 @@ export default function Regions() {
       <s-section heading="配送日数の設定">
         <s-stack direction="block" gap="base">
           <s-paragraph>
-            各都道府県への配送にかかる日数を設定してください。
+            地域単位で配送にかかる日数を入力すると、地域に含まれる全ての都道府県へ反映されます。
           </s-paragraph>
 
           <s-button onClick={setDefaultValues} variant="secondary">
@@ -128,38 +143,74 @@ export default function Regions() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
               gap: "16px",
               marginTop: "16px",
             }}
           >
-            {PREFECTURES.map((prefecture) => (
-              <div
-                key={prefecture}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                <label style={{ minWidth: "80px" }}>{prefecture}</label>
-                <input
-                  type="number"
-                  value={regionalMap[prefecture] ?? ""}
-                  onChange={(e) => handleChange(prefecture, e.target.value)}
-                  min="0"
-                  max="10"
-                  placeholder="日数"
-                  style={{
-                    padding: "6px",
-                    border: "1px solid #ccc",
-                    borderRadius: "4px",
-                    width: "60px",
-                  }}
-                />
-                <span>日</span>
-              </div>
-            ))}
+            {(Object.entries(REGIONS) as [RegionName, readonly string[]][])
+              .map(([region, prefectures]) => {
+                const inputValue = getRegionInputValue(region);
+                return (
+                  <div
+                    key={region}
+                    style={{
+                      border: "1px solid #e1e3e5",
+                      borderRadius: "8px",
+                      padding: "12px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "8px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: "12px",
+                      }}
+                    >
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600 }}>{region}</div>
+                        <div
+                          style={{
+                            fontSize: "12px",
+                            color: "#6c7179",
+                            marginTop: "4px",
+                          }}
+                        >
+                          {prefectures.join(" / ")}
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        <input
+                          type="number"
+                          value={inputValue === "" ? "" : String(inputValue)}
+                          onChange={(e) => handleRegionChange(region, e.target.value)}
+                          min="0"
+                          max="10"
+                          placeholder="日数"
+                          style={{
+                            padding: "6px",
+                            border: "1px solid #ccc",
+                            borderRadius: "4px",
+                            width: "80px",
+                            textAlign: "right",
+                          }}
+                        />
+                        <span>日</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
           </div>
 
           <s-button
