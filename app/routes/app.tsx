@@ -19,7 +19,9 @@ export default function App() {
     <AppProvider embedded apiKey={apiKey}>
       <s-app-nav>
         <s-link href="/app">Home</s-link>
-        <s-link href="/app/additional">Additional page</s-link>
+        <s-link href="/app/settings">配送設定</s-link>
+        <s-link href="/app/regions">地域別配送日数</s-link>
+        <s-link href="/app/holidays">休業日設定</s-link>
       </s-app-nav>
       <Outlet />
     </AppProvider>
