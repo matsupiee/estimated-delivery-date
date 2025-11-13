@@ -104,3 +104,34 @@ export const REGIONS: Record<string, Prefecture[]> = {
 } as const;
 
 export type RegionName = keyof typeof REGIONS;
+
+export const REGION_COLORS: Record<RegionName, string> = {
+  北海道: "#8bcf5a",
+  東北: "#f6c24a",
+  関東: "#f49390",
+  中部: "#f2a65a",
+  関西: "#b982c2",
+  中国: "#7bb6ff",
+  四国: "#5ccadf",
+  九州: "#7a8ef8",
+  沖縄: "#3abf9a",
+} as const;
+
+export type RegionGridPlacement = {
+  columnStart: number;
+  columnEnd: number;
+  rowStart: number;
+  rowEnd: number;
+};
+
+export const REGION_GRID_PLACEMENT: Record<RegionName, RegionGridPlacement> = {
+  北海道: { columnStart: 8, columnEnd: 12, rowStart: 1, rowEnd: 4 },
+  東北: { columnStart: 7, columnEnd: 11, rowStart: 4, rowEnd: 7 },
+  関東: { columnStart: 6, columnEnd: 10, rowStart: 6, rowEnd: 9 },
+  中部: { columnStart: 5, columnEnd: 9, rowStart: 8, rowEnd: 11 },
+  関西: { columnStart: 4, columnEnd: 8, rowStart: 10, rowEnd: 13 },
+  中国: { columnStart: 3, columnEnd: 7, rowStart: 12, rowEnd: 15 },
+  四国: { columnStart: 4, columnEnd: 6, rowStart: 15, rowEnd: 17 },
+  九州: { columnStart: 2, columnEnd: 6, rowStart: 16, rowEnd: 19 },
+  沖縄: { columnStart: 9, columnEnd: 11, rowStart: 19, rowEnd: 21 },
+} as const;

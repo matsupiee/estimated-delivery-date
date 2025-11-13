@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type {
   ActionFunctionArgs,
   HeadersFunction,
@@ -8,7 +8,13 @@ import { useFetcher, useLoaderData } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../servers/shopify.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
-import { PREFECTURES, REGIONS, type RegionName } from "../lib/constants";
+import {
+  PREFECTURES,
+  REGIONS,
+  REGION_COLORS,
+  REGION_GRID_PLACEMENT,
+  type RegionName,
+} from "../lib/constants";
 import { prisma } from "app/servers/db.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -70,6 +76,12 @@ export default function Regions() {
   const [regionalMap, setRegionalMap] = useState<Record<string, number>>(
     loaderData.regionalMap
   );
+  const regionInputRefs = useRef<Record<RegionName, HTMLInputElement | null>>(
+    Object.keys(REGIONS).reduce(
+      (acc, key) => ({ ...acc, [key]: null }),
+      {} as Record<RegionName, HTMLInputElement | null>
+    )
+  );
 
   const isLoading =
     ["loading", "submitting"].includes(fetcher.state) &&
@@ -124,6 +136,19 @@ export default function Regions() {
     setRegionalMap(defaultMap);
   };
 
+  const focusRegionInput = (region: RegionName) => {
+    const target = regionInputRefs.current[region];
+    if (target) {
+      target.focus();
+      target.select();
+    }
+  };
+
+  const regionEntries = Object.entries(REGIONS) as [
+    RegionName,
+    readonly string[]
+  ][];
+
   return (
     <s-page heading="地域別配送日数">
       <s-button slot="primary-action" onClick={handleSave}>
@@ -133,7 +158,7 @@ export default function Regions() {
       <s-section heading="配送日数の設定">
         <s-stack direction="block" gap="base">
           <s-paragraph>
-            地域単位で配送にかかる日数を入力すると、地域に含まれる全ての都道府県へ反映されます。
+            地域単位で配送日数を入力すると、地図にも同じ色で反映されます。地図をクリックすると該当地域の入力にフォーカスします。
           </s-paragraph>
 
           <s-button onClick={setDefaultValues} variant="secondary">
@@ -142,75 +167,182 @@ export default function Regions() {
 
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-              gap: "16px",
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "32px",
               marginTop: "16px",
             }}
           >
-            {(Object.entries(REGIONS) as [RegionName, readonly string[]][])
-              .map(([region, prefectures]) => {
+            <div
+              style={{
+                flex: "1 1 420px",
+                minWidth: "320px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "16px",
+              }}
+            >
+              {regionEntries.map(([region, prefectures]) => {
                 const inputValue = getRegionInputValue(region);
                 return (
                   <div
                     key={region}
                     style={{
                       border: "1px solid #e1e3e5",
-                      borderRadius: "8px",
+                      borderRadius: "12px",
                       padding: "12px",
                       display: "flex",
-                      flexDirection: "column",
-                      gap: "8px",
+                      gap: "12px",
+                      alignItems: "center",
                     }}
                   >
                     <div
                       style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        gap: "12px",
+                        width: "6px",
+                        alignSelf: "stretch",
+                        borderRadius: "999px",
+                        background: REGION_COLORS[region],
                       }}
-                    >
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 600 }}>{region}</div>
-                        <div
-                          style={{
-                            fontSize: "12px",
-                            color: "#6c7179",
-                            marginTop: "4px",
-                          }}
-                        >
-                          {prefectures.join(" / ")}
-                        </div>
-                      </div>
+                    />
+                    <div style={{ flex: 1 }}>
                       <div
                         style={{
                           display: "flex",
-                          alignItems: "center",
-                          gap: "6px",
+                          justifyContent: "space-between",
+                          alignItems: "baseline",
+                          gap: "8px",
                         }}
                       >
-                        <input
-                          type="number"
-                          value={inputValue === "" ? "" : String(inputValue)}
-                          onChange={(e) => handleRegionChange(region, e.target.value)}
-                          min="0"
-                          max="10"
-                          placeholder="日数"
+                        <span style={{ fontWeight: 600 }}>{region}</span>
+                        <span
                           style={{
-                            padding: "6px",
-                            border: "1px solid #ccc",
-                            borderRadius: "4px",
-                            width: "80px",
-                            textAlign: "right",
+                            fontSize: "12px",
+                            color: "#6c7179",
                           }}
-                        />
-                        <span>日</span>
+                        >
+                          {prefectures.length}都道府県
+                        </span>
                       </div>
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: "#6c7179",
+                          marginTop: "4px",
+                          lineHeight: 1.4,
+                        }}
+                      >
+                        {prefectures.join(" / ")}
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      <input
+                        ref={(el) => {
+                          regionInputRefs.current[region] = el;
+                        }}
+                        type="number"
+                        value={inputValue === "" ? "" : String(inputValue)}
+                        onChange={(e) =>
+                          handleRegionChange(region, e.target.value)
+                        }
+                        min="0"
+                        max="10"
+                        placeholder="日数"
+                        style={{
+                          padding: "6px",
+                          border: "1px solid #ccc",
+                          borderRadius: "6px",
+                          width: "82px",
+                          textAlign: "right",
+                        }}
+                      />
+                      <span>日</span>
                     </div>
                   </div>
                 );
               })}
+            </div>
+
+            <div
+              style={{
+                flex: "1 1 360px",
+                minWidth: "320px",
+              }}
+            >
+              <div style={{ fontWeight: 600, marginBottom: "12px" }}>
+                全国地図から設定
+              </div>
+              <div
+                style={{
+                  border: "1px solid #e1e3e5",
+                  borderRadius: "16px",
+                  padding: "20px",
+                  background:
+                    "linear-gradient(180deg, rgba(255,255,255,0.9), rgba(246,249,255,0.9))",
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(12, minmax(0, 1fr))",
+                    gridAutoRows: "32px",
+                    gap: "6px",
+                    height: "420px",
+                  }}
+                >
+                  {regionEntries.map(([region]) => {
+                    const placement = REGION_GRID_PLACEMENT[region];
+                    const inputValue = getRegionInputValue(region);
+                    const hasValue = inputValue !== "";
+                    return (
+                      <button
+                        key={region}
+                        type="button"
+                        onClick={() => focusRegionInput(region)}
+                        style={{
+                          gridColumn: `${placement.columnStart} / ${placement.columnEnd}`,
+                          gridRow: `${placement.rowStart} / ${placement.rowEnd}`,
+                          border: "none",
+                          borderRadius: "10px",
+                          background: REGION_COLORS[region],
+                          color: "#fff",
+                          fontWeight: 600,
+                          fontSize: "14px",
+                          boxShadow:
+                            "0 4px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.3)",
+                          cursor: "pointer",
+                          opacity: hasValue ? 1 : 0.65,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          textShadow: "0 1px 2px rgba(0,0,0,0.2)",
+                          transition: "transform 0.15s ease, opacity 0.2s ease",
+                        }}
+                        aria-label={`${region}の配送日数入力に移動`}
+                      >
+                        {region}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div
+                  style={{
+                    marginTop: "12px",
+                    fontSize: "12px",
+                    color: "#6c7179",
+                    textAlign: "center",
+                  }}
+                >
+                  ※ 色の濃淡は入力済みかどうかを表します
+                </div>
+              </div>
+            </div>
           </div>
 
           <s-button
