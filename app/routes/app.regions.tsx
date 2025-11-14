@@ -12,6 +12,8 @@ import {
   PREFECTURES,
   REGIONS,
   REGION_COLORS,
+  REGION_LEAD_TIME,
+  PREFECTURE_TO_REGION,
   type RegionName,
 } from "../lib/constants";
 import { RegionMap } from "../components/RegionMap";
@@ -81,6 +83,8 @@ export default function Regions() {
   const [regionalMap, setRegionalMap] = useState<Record<string, number>>(
     loaderData.regionalMap
   );
+  const [factoryRegion, setFactoryRegion] = useState<RegionName>("関東");
+  const [autoFillMode, setAutoFillMode] = useState<"min" | "max">("max");
   const regionInputRefs = useRef<Record<RegionName, HTMLInputElement | null>>(
     Object.keys(REGIONS).reduce(
       (acc, key) => ({ ...acc, [key]: null }),
@@ -149,6 +153,23 @@ export default function Regions() {
     }
   };
 
+  const applyFactoryLeadTime = () => {
+    const leadTimes = REGION_LEAD_TIME[factoryRegion];
+    setRegionalMap((prev) => {
+      const next = { ...prev };
+      PREFECTURES.forEach((prefecture) => {
+        const destinationRegion = PREFECTURE_TO_REGION[prefecture];
+        const range = leadTimes[destinationRegion];
+        if (!range) {
+          return;
+        }
+        const value = autoFillMode === "max" ? range.max : range.min;
+        next[prefecture] = value;
+      });
+      return next;
+    });
+  };
+
   const regionValueMap = useMemo(
     () =>
       REGION_ENTRIES.reduce((acc, [region]) => {
@@ -173,6 +194,85 @@ export default function Regions() {
           <s-button onClick={setDefaultValues} variant="secondary">
             デフォルト値を設定（北海道・沖縄: 3日、その他: 1日）
           </s-button>
+
+          <div
+            style={{
+              border: "1px solid #e1e3e5",
+              borderRadius: "12px",
+              padding: "16px",
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "16px",
+              alignItems: "flex-end",
+            }}
+          >
+            <div style={{ flex: "1 1 220px", minWidth: "200px" }}>
+              <label
+                htmlFor="factory-region"
+                style={{ display: "block", fontWeight: 600, marginBottom: "6px" }}
+              >
+                出荷工場の地域
+              </label>
+              <select
+                id="factory-region"
+                value={factoryRegion}
+                onChange={(event) =>
+                  setFactoryRegion(event.target.value as RegionName)
+                }
+                style={{
+                  width: "100%",
+                  padding: "8px",
+                  borderRadius: "8px",
+                  border: "1px solid #c9ced6",
+                }}
+              >
+                {REGION_ENTRIES.map(([region]) => (
+                  <option key={region} value={region}>
+                    {region}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ flex: "1 1 220px", minWidth: "200px" }}>
+              <span style={{ display: "block", fontWeight: 600, marginBottom: "6px" }}>
+                使用するリードタイム
+              </span>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "12px",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                <label style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                  <input
+                    type="radio"
+                    name="leadtime-mode"
+                    value="min"
+                    checked={autoFillMode === "min"}
+                    onChange={() => setAutoFillMode("min")}
+                  />
+                  最短日数
+                </label>
+                <label style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                  <input
+                    type="radio"
+                    name="leadtime-mode"
+                    value="max"
+                    checked={autoFillMode === "max"}
+                    onChange={() => setAutoFillMode("max")}
+                  />
+                  最大日数
+                </label>
+              </div>
+            </div>
+
+            <s-button onClick={applyFactoryLeadTime} variant="secondary">
+              出荷元のリードタイムを適用
+            </s-button>
+          </div>
 
           <div
             style={{
