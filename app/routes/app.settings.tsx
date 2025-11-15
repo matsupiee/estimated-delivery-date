@@ -112,14 +112,6 @@ export default function Settings() {
           </s-button>
         </s-stack>
       </s-section>
-
-      <s-section heading="今後の機能">
-        <s-unordered-list>
-          <s-list-item>地域別配送日数の設定</s-list-item>
-          <s-list-item>休業日カレンダーの設定</s-list-item>
-          <s-list-item>配送予定日の計算</s-list-item>
-        </s-unordered-list>
-      </s-section>
     </s-page>
   );
 }
