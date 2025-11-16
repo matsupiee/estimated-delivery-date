@@ -1,0 +1,25 @@
+{%- comment -%}
+  Theme app block that shows a small badge with an estimated delivery date.
+  For now it is fixed to "today + 2 days".
+{%- endcomment -%}
+
+{{ 'delivery-date-badge.css' | asset_url | stylesheet_tag }}
+
+{%- assign current_timestamp = 'now' | date: '%s' -%}
+{%- assign estimated_timestamp = current_timestamp | plus: 172800 -%}
+{%- assign estimated_date = estimated_timestamp | date: '%Y年%-m月%-d日' -%}
+
+<div class="edd-badge">
+  <span class="edd-badge__pill">{{ 'delivery_date_badge.label' | t }}</span>
+  <span class="edd-badge__text">
+    {{ 'delivery_date_badge.arrives_by' | t }}{{ estimated_date }}
+  </span>
+</div>
+
+{% schema %}
+{
+  "name": "Estimated delivery badge",
+  "target": "section",
+  "settings": []
+}
+{% endschema %}

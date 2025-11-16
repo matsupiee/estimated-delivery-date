@@ -222,12 +222,13 @@ Shopifyストアフロントに表示する拡張機能（Theme App Extension、
 
 ### extensions/delivery-date-display/
 
-配送予定日表示拡張機能（実装予定）
+配送予定日表示拡張機能
 
 - **assets/**: 静的アセット（画像、CSSなど）
 - **blocks/**: Liquidブロックテンプレート
 - **locales/**: 多言語対応ファイル
 - **snippets/**: Liquidスニペット
+- **shopify.extension.toml**: Shopify の拡張機能（App block / App embed / Admin 拡張 etc）のメタ情報を入れるファイル
 
 ## prisma/ - データベース
 
