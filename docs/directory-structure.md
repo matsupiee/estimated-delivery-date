@@ -230,6 +230,8 @@ Shopifyストアフロントに表示する拡張機能（Theme App Extension、
 - **snippets/**: Liquidスニペット
 - **shopify.extension.toml**: Shopify の拡張機能（App block / App embed / Admin 拡張 etc）のメタ情報を入れるファイル
 
+実装方法は[公式docs](https://shopify.dev/docs/apps/build/online-store/theme-app-extensions/configuration)を参照
+
 ## prisma/ - データベース
 
 Prismaスキーマとマイグレーションファイル
