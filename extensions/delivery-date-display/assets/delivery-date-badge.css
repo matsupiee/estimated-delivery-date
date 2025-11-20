@@ -25,3 +25,17 @@
 .edd-badge__text {
   white-space: nowrap;
 }
+
+.edd-badge__loading {
+  opacity: 0.6;
+  animation: edd-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes edd-pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}

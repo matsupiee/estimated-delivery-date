@@ -1,6 +1,7 @@
 {
   "delivery_date_badge": {
     "label": "ETA",
-    "arrives_by": "Arrives by "
+    "arrives_by": "Arrives by ",
+    "loading": "Loading..."
   }
 }

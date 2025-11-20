@@ -12,14 +12,20 @@ export async function calculateDeliveryDate(
   shop: string,
   prefecture: string,
   orderDate: Date = new Date(),
-): Promise<Date | null> {
+): Promise<{
+  date: Date | null;
+  error: string | null;
+}> {
   // 1. ShippingConfigから発送準備日数を取得
   const config = await prisma.shippingConfig.findUnique({
     where: { shop },
   });
 
   if (!config) {
-    return null; // 設定が未登録
+    return {
+      date: null,
+      error: `発送準備日数が未登録: ${shop}`,
+    };
   }
 
   // 2. RegionalShippingTimeから地域別配送日数を取得
@@ -33,7 +39,10 @@ export async function calculateDeliveryDate(
   });
 
   if (!regionalTime) {
-    return null; // 地域設定が未登録
+    return {
+      date: null,
+      error: `地域設定が未登録: ${shop} ${prefecture}`,
+    };
   }
 
   // 3. 発送日を計算（営業日ベース）
@@ -47,7 +56,10 @@ export async function calculateDeliveryDate(
   const deliveryDate = new Date(shippingDate);
   deliveryDate.setDate(deliveryDate.getDate() + regionalTime.shippingDays);
 
-  return deliveryDate;
+  return {
+    date: deliveryDate,
+    error: null,
+  };
 }
 
 /**
