@@ -1,41 +1,87 @@
 .edd-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.35rem 0.75rem;
-  border-radius: 999px;
-  background: #f2f4f8;
-  color: #0f172a;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
   font-size: 0.9rem;
   line-height: 1.4;
   font-weight: 600;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.edd-badge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.edd-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.edd-badge:hover::before {
+  left: 100%;
 }
 
 .edd-badge__pill {
   display: inline-flex;
   align-items: center;
-  padding: 0.15rem 0.6rem;
-  border-radius: 999px;
-  background: #111827;
+  gap: 0.3rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(4px);
   color: #fff;
-  font-size: 0.72rem;
-  letter-spacing: 0.01em;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.edd-badge__pill::before {
+  content: '🚚';
+  font-size: 0.85rem;
 }
 
 .edd-badge__text {
   white-space: nowrap;
+  font-weight: 500;
 }
 
 .edd-badge__loading {
-  opacity: 0.6;
+  opacity: 0.7;
   animation: edd-pulse 1.5s ease-in-out infinite;
 }
 
 @keyframes edd-pulse {
   0%, 100% {
-    opacity: 0.6;
+    opacity: 0.7;
   }
   50% {
-    opacity: 0.3;
+    opacity: 0.4;
+  }
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .edd-badge {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+  }
+
+  .edd-badge:hover {
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.5);
   }
 }
