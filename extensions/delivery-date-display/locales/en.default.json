@@ -3,5 +3,12 @@
     "label": "ETA",
     "arrives_by": "Arrives by ",
     "loading": "Loading..."
+  },
+  "delivery_timeline": {
+    "title": "Calculating delivery date...",
+    "title_prefix": "Estimated Delivery Date ",
+    "ordered": "Ordered",
+    "shipped": "Shipped",
+    "delivery": "Delivery"
   }
 }
