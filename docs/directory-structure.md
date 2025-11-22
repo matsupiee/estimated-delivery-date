@@ -266,6 +266,11 @@ Prismaスキーマとマイグレーションファイル
 
 Shopify Appの設定（アプリ名、スコープ、Webhook設定など）
 
+主な参照タイミング
+
+- 開発時のアプリ起動時に、設定を読み込み
+- デプロイ時に設定をShopifyに同期する(Webhook設定、アクセススコープ設定)
+
 ### shopify.web.toml
 
 Shopify Web設定
