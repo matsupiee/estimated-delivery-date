@@ -58,6 +58,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   return {
     preparationDays: config?.preparationDays ?? 1,
+    sameDayShippingCutoffTime: config?.sameDayShippingCutoffTime ?? null,
     regionalMap,
     weeklyNonShippingDays: weeklyNonShippingDays.map((day) => day.dayOfWeek),
     customNonShippingDays: customNonShippingDays.map((day) => ({
@@ -81,10 +82,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       formData.get("preparationDays") as string,
       10
     );
+    // 締め時間は当日発送（preparationDays = 0）の場合のみ有効
+    const sameDayShippingCutoffTime =
+      preparationDays === 0
+        ? (formData.get("sameDayShippingCutoffTime") as string) || null
+        : null;
     await prisma.shippingConfig.upsert({
       where: { shop },
-      create: { shop, preparationDays },
-      update: { preparationDays },
+      create: { shop, preparationDays, sameDayShippingCutoffTime },
+      update: { preparationDays, sameDayShippingCutoffTime },
     });
     return { success: true, message: "設定を保存しました", actionType: "saveBasic" };
   }
@@ -169,6 +175,9 @@ export default function Settings() {
   const [preparationDays, setPreparationDays] = useState(
     loaderData.preparationDays
   );
+  const [sameDayShippingCutoffTime, setSameDayShippingCutoffTime] = useState<
+    string | null
+  >(loaderData.sameDayShippingCutoffTime);
 
   // 地域別配送日数
   const [regionalMap, setRegionalMap] = useState<Record<string, number>>(
@@ -220,6 +229,10 @@ export default function Settings() {
     const formData = new FormData();
     formData.append("actionType", "saveBasic");
     formData.append("preparationDays", preparationDays.toString());
+    formData.append(
+      "sameDayShippingCutoffTime",
+      sameDayShippingCutoffTime ?? ""
+    );
     fetcher.submit(formData, { method: "POST" });
   };
 
@@ -250,6 +263,8 @@ export default function Settings() {
           <BasicSettingsSection
             preparationDays={preparationDays}
             onPreparationDaysChange={setPreparationDays}
+            sameDayShippingCutoffTime={sameDayShippingCutoffTime}
+            onSameDayShippingCutoffTimeChange={setSameDayShippingCutoffTime}
             onSave={handleSaveBasic}
             isLoading={isLoading}
           />

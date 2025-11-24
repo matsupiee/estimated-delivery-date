@@ -43,6 +43,10 @@ model ShippingConfig {
 
   // 発送準備日数(注文から何日後に発送できるかを設定)
   preparationDays Int @default(1)
+
+  // 同日発送可能時間帯の切り替え時間（HH:MM）
+  // preparationDays=0の場合に有効
+  sameDayShippingCutoffTime String?
 }
 
 // 地域別配送日数
