@@ -9,6 +9,7 @@ import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../servers/shopify.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { prisma } from "app/servers/db.server";
+import holidayJp from "@holiday-jp/holiday_jp";
 import {
   AccordionSection,
   type SectionId,
@@ -44,6 +45,17 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     orderBy: { date: "asc" },
   });
 
+  // 直近1年の日本の祝日を取得
+  const now = new Date();
+  const oneYearLater = new Date(now);
+  oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+  const japaneseHolidays = holidayJp
+    .between(now, oneYearLater)
+    .map((holiday) => ({
+      date: holiday.date.toISOString(),
+      name: holiday.name,
+    }));
+
   return {
     preparationDays: config?.preparationDays ?? 1,
     regionalMap,
@@ -53,6 +65,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       date: day.date.toISOString(),
       reason: day.reason,
     })),
+    japaneseHolidays,
   };
 };
 
@@ -116,6 +129,20 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       data: { shop, date, reason },
     });
     return { success: true, message: "休業日を追加しました" };
+  }
+
+  if (actionType === "addCustomHolidaysBulk") {
+    const holidaysJson = formData.get("holidays") as string;
+    const holidays: { date: string; reason: string }[] = JSON.parse(holidaysJson);
+
+    await prisma.customNonShippingDay.createMany({
+      data: holidays.map((h) => ({
+        shop,
+        date: new Date(h.date),
+        reason: h.reason,
+      })),
+    });
+    return { success: true, message: `${holidays.length}件の休業日を追加しました` };
   }
 
   if (actionType === "deleteHoliday") {
@@ -255,6 +282,7 @@ export default function Settings() {
           <HolidaySettingsSection
             weeklyNonShippingDays={loaderData.weeklyNonShippingDays}
             customNonShippingDays={loaderData.customNonShippingDays}
+            japaneseHolidays={loaderData.japaneseHolidays}
             shopify={shopify}
             onSubmit={handleHolidaySubmit}
           />

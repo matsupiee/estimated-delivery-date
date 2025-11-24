@@ -1,9 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Spinner } from "../ui/Spinner";
+import { HolidayPickerModal } from "./HolidayPickerModal";
 
 type CustomNonShippingDay = {
   id: string;
   date: string;
   reason: string | null;
+};
+
+type JapaneseHoliday = {
+  date: string;
+  name: string;
 };
 
 type Shopify = {
@@ -15,6 +22,7 @@ type Shopify = {
 type HolidaySettingsSectionProps = {
   weeklyNonShippingDays: number[]; // 0=Sun ... 6=Sat
   customNonShippingDays: CustomNonShippingDay[];
+  japaneseHolidays: JapaneseHoliday[];
   shopify: Shopify;
   onSubmit: (formData: FormData) => void;
 };
@@ -32,6 +40,7 @@ const DAYS_OF_WEEK = [
 export function HolidaySettingsSection({
   weeklyNonShippingDays,
   customNonShippingDays,
+  japaneseHolidays,
   shopify,
   onSubmit,
 }: HolidaySettingsSectionProps) {
@@ -40,6 +49,20 @@ export function HolidaySettingsSection({
   );
   const [customDate, setCustomDate] = useState("");
   const [customReason, setCustomReason] = useState("");
+  const [isHolidayModalOpen, setIsHolidayModalOpen] = useState(false);
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+  const [isAddingHolidays, setIsAddingHolidays] = useState(false);
+
+  // customNonShippingDaysが変わったらローディング状態をリセット
+  useEffect(() => {
+    setIsAddingHolidays(false);
+    setDeletingIds(new Set());
+  }, [customNonShippingDays]);
+
+  // 既に登録済みの日付を取得
+  const existingDates = new Set(
+    customNonShippingDays.map((day) => day.date.split("T")[0])
+  );
 
   const toggleDay = (day: number) => {
     setSelectedDays((prev) => {
@@ -75,9 +98,21 @@ export function HolidaySettingsSection({
   };
 
   const handleDeleteHoliday = (id: string) => {
+    if (deletingIds.has(id)) return;
+    setDeletingIds((prev) => new Set(prev).add(id));
     const formData = new FormData();
     formData.append("actionType", "deleteHoliday");
     formData.append("id", id);
+    onSubmit(formData);
+  };
+
+  const handleAddHolidaysFromModal = (
+    holidays: { date: string; reason: string }[]
+  ) => {
+    setIsAddingHolidays(true);
+    const formData = new FormData();
+    formData.append("actionType", "addCustomHolidaysBulk");
+    formData.append("holidays", JSON.stringify(holidays));
     onSubmit(formData);
   };
 
@@ -166,6 +201,53 @@ export function HolidaySettingsSection({
             <s-button onClick={handleAddCustomHoliday}>追加</s-button>
           </s-stack>
 
+          <div>
+            <button
+              onClick={() => setIsHolidayModalOpen(true)}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "8px 16px",
+                background: "white",
+                border: "1px solid #008060",
+                borderRadius: "6px",
+                color: "#008060",
+                cursor: "pointer",
+                fontSize: "14px",
+                fontWeight: 500,
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              祝日から選ぶ
+            </button>
+          </div>
+
+          {/* 祝日選択モーダル */}
+          <HolidayPickerModal
+            isOpen={isHolidayModalOpen}
+            onClose={() => setIsHolidayModalOpen(false)}
+            japaneseHolidays={japaneseHolidays}
+            existingDates={existingDates}
+            onAddHolidays={handleAddHolidaysFromModal}
+            isLoading={isAddingHolidays}
+          />
+
           <div style={{ marginTop: "16px" }}>
             <table
               style={{
@@ -183,52 +265,63 @@ export function HolidaySettingsSection({
               </thead>
               <tbody>
                 {customNonShippingDays.length > 0 ? (
-                  customNonShippingDays.map((day) => (
-                    <tr key={day.id} style={{ borderTop: "1px solid #ddd" }}>
-                      <td style={{ padding: "8px" }}>
-                        {new Date(day.date).toLocaleDateString("ja-JP")}
-                      </td>
-                      <td style={{ padding: "8px" }}>{day.reason}</td>
-                      <td style={{ padding: "8px", textAlign: "center" }}>
-                        <button
-                          onClick={() => handleDeleteHoliday(day.id)}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                            padding: "4px 8px",
-                            borderRadius: "4px",
-                            color: "#6d7175",
-                            transition: "color 0.2s",
-                          }}
-                          onMouseEnter={(e) =>
-                            (e.currentTarget.style.color = "#d72c0d")
-                          }
-                          onMouseLeave={(e) =>
-                            (e.currentTarget.style.color = "#6d7175")
-                          }
-                          title="削除"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
+                  customNonShippingDays.map((day) => {
+                    const isDeleting = deletingIds.has(day.id);
+                    return (
+                      <tr key={day.id} style={{ borderTop: "1px solid #ddd" }}>
+                        <td style={{ padding: "8px" }}>
+                          {new Date(day.date).toLocaleDateString("ja-JP")}
+                        </td>
+                        <td style={{ padding: "8px" }}>{day.reason}</td>
+                        <td style={{ padding: "8px", textAlign: "center" }}>
+                          <button
+                            onClick={() => handleDeleteHoliday(day.id)}
+                            disabled={isDeleting}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              cursor: isDeleting ? "not-allowed" : "pointer",
+                              padding: "4px 8px",
+                              borderRadius: "4px",
+                              color: "#6d7175",
+                              transition: "color 0.2s",
+                              opacity: isDeleting ? 0.5 : 1,
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isDeleting) {
+                                e.currentTarget.style.color = "#d72c0d";
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.color = "#6d7175";
+                            }}
+                            title={isDeleting ? "削除中..." : "削除"}
                           >
-                            <polyline points="3 6 5 6 21 6" />
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                            <line x1="10" y1="11" x2="10" y2="17" />
-                            <line x1="14" y1="11" x2="14" y2="17" />
-                          </svg>
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                            {isDeleting ? (
+                              <Spinner size={18} />
+                            ) : (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                <line x1="10" y1="11" x2="10" y2="17" />
+                                <line x1="14" y1="11" x2="14" y2="17" />
+                              </svg>
+                            )}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr style={{ borderTop: "1px solid #ddd" }}>
                     <td
