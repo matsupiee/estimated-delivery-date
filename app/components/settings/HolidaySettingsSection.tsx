@@ -1,17 +1,9 @@
 import { useState } from "react";
 
-type NonShippingDay = {
+type CustomNonShippingDay = {
   id: string;
   date: string;
   reason: string | null;
-  dayOfWeek: number | null;
-};
-
-type Holiday = {
-  id: string;
-  date: string;
-  name: string;
-  year: number;
 };
 
 type Shopify = {
@@ -21,39 +13,50 @@ type Shopify = {
 };
 
 type HolidaySettingsSectionProps = {
-  nonShippingDays: NonShippingDay[];
-  holidays: Holiday[];
-  selectedHolidayDates: string[];
+  weeklyNonShippingDays: number[]; // 0=Sun ... 6=Sat
+  customNonShippingDays: CustomNonShippingDay[];
   shopify: Shopify;
   onSubmit: (formData: FormData) => void;
 };
 
+const DAYS_OF_WEEK = [
+  { value: 0, label: "日曜日" },
+  { value: 1, label: "月曜日" },
+  { value: 2, label: "火曜日" },
+  { value: 3, label: "水曜日" },
+  { value: 4, label: "木曜日" },
+  { value: 5, label: "金曜日" },
+  { value: 6, label: "土曜日" },
+];
+
 export function HolidaySettingsSection({
-  nonShippingDays,
-  holidays,
-  selectedHolidayDates,
+  weeklyNonShippingDays,
+  customNonShippingDays,
   shopify,
   onSubmit,
 }: HolidaySettingsSectionProps) {
-  const [saturday, setSaturday] = useState(() =>
-    nonShippingDays.some((day) => day.dayOfWeek === 6)
-  );
-  const [sunday, setSunday] = useState(() =>
-    nonShippingDays.some((day) => day.dayOfWeek === 0)
+  const [selectedDays, setSelectedDays] = useState<Set<number>>(
+    () => new Set(weeklyNonShippingDays)
   );
   const [customDate, setCustomDate] = useState("");
   const [customReason, setCustomReason] = useState("");
 
-  // 選択された祝日の日付を管理
-  const [selectedDates, setSelectedDates] = useState<Set<string>>(
-    () => new Set(selectedHolidayDates)
-  );
+  const toggleDay = (day: number) => {
+    setSelectedDays((prev) => {
+      const next = new Set(prev);
+      if (next.has(day)) {
+        next.delete(day);
+      } else {
+        next.add(day);
+      }
+      return next;
+    });
+  };
 
   const handleSaveWeeklyHolidays = () => {
     const formData = new FormData();
     formData.append("actionType", "setWeeklyHolidays");
-    formData.append("saturday", saturday.toString());
-    formData.append("sunday", sunday.toString());
+    formData.append("daysOfWeek", JSON.stringify(Array.from(selectedDays)));
     onSubmit(formData);
   };
 
@@ -78,58 +81,6 @@ export function HolidaySettingsSection({
     onSubmit(formData);
   };
 
-  // 祝日の選択を切り替え
-  const toggleHoliday = (dateString: string) => {
-    setSelectedDates((prev) => {
-      const next = new Set(prev);
-      if (next.has(dateString)) {
-        next.delete(dateString);
-      } else {
-        next.add(dateString);
-      }
-      return next;
-    });
-  };
-
-  // 全選択
-  const selectAll = () => {
-    const allDates = holidays.map((h) => h.date.split("T")[0]);
-    setSelectedDates(new Set(allDates));
-  };
-
-  // 全選択解除
-  const deselectAll = () => {
-    setSelectedDates(new Set());
-  };
-
-  // 祝日休業設定を保存
-  const handleSaveHolidays = () => {
-    const formData = new FormData();
-    formData.append("actionType", "saveHolidays");
-    const selectedHolidays = holidays
-      .filter((h) => selectedDates.has(h.date.split("T")[0]))
-      .map((h) => ({ date: h.date, name: h.name }));
-    formData.append("selectedDates", JSON.stringify(selectedHolidays));
-    onSubmit(formData);
-  };
-
-  // カスタム休業日（祝日以外）
-  const customHolidays = nonShippingDays.filter(
-    (day) => day.dayOfWeek === null && !day.reason?.startsWith("祝日:")
-  );
-
-  // 年ごとにグループ化
-  const holidaysByYear = holidays.reduce(
-    (acc, holiday) => {
-      if (!acc[holiday.year]) {
-        acc[holiday.year] = [];
-      }
-      acc[holiday.year].push(holiday);
-      return acc;
-    },
-    {} as Record<number, Holiday[]>
-  );
-
   return (
     <s-stack direction="block" gap="large">
       {/* 定期休業日 */}
@@ -138,159 +89,44 @@ export function HolidaySettingsSection({
         <s-stack direction="block" gap="base">
           <s-paragraph>毎週の定休日を設定してください。</s-paragraph>
 
-          <s-stack direction="block" gap="small">
-            <label
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={saturday}
-                onChange={(e) => setSaturday(e.target.checked)}
-              />
-              <span>土曜日</span>
-            </label>
-
-            <label
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={sunday}
-                onChange={(e) => setSunday(e.target.checked)}
-              />
-              <span>日曜日</span>
-            </label>
-          </s-stack>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
+              gap: "8px",
+            }}
+          >
+            {DAYS_OF_WEEK.map((day) => {
+              const isSelected = selectedDays.has(day.value);
+              return (
+                <label
+                  key={day.value}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "8px 12px",
+                    background: isSelected ? "#e3f1df" : "white",
+                    border: `1px solid ${isSelected ? "#008060" : "#e1e3e5"}`,
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => toggleDay(day.value)}
+                    style={{ accentColor: "#008060" }}
+                  />
+                  <span>{day.label}</span>
+                </label>
+              );
+            })}
+          </div>
 
           <s-button onClick={handleSaveWeeklyHolidays}>
             定期休業日を保存
           </s-button>
-        </s-stack>
-      </div>
-
-      {/* 祝日 */}
-      <div>
-        <h3 style={{ margin: "0 0 12px 0", fontSize: "16px" }}>祝日休業設定</h3>
-        <s-stack direction="block" gap="base">
-          <s-paragraph>
-            休業日とする祝日にチェックを入れてください。チェックされた祝日は配送予定日の計算時にスキップされます。
-          </s-paragraph>
-
-          {holidays.length === 0 ? (
-            <s-paragraph>
-              祝日データがありません。システム管理者にお問い合わせください。
-            </s-paragraph>
-          ) : (
-            <>
-              {/* 全選択/全解除ボタン */}
-              <div style={{ display: "flex", gap: "8px" }}>
-                <s-button onClick={selectAll} variant="secondary">
-                  すべて選択
-                </s-button>
-                <s-button onClick={deselectAll} variant="secondary">
-                  すべて解除
-                </s-button>
-              </div>
-
-              {/* 年ごとの祝日一覧 */}
-              {Object.entries(holidaysByYear).map(([year, yearHolidays]) => (
-                <div key={year}>
-                  <h4
-                    style={{
-                      margin: "16px 0 8px 0",
-                      fontSize: "14px",
-                      color: "#6c7179",
-                    }}
-                  >
-                    {year}年
-                  </h4>
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-                      gap: "8px",
-                      padding: "12px",
-                      border: "1px solid #e1e3e5",
-                      borderRadius: "8px",
-                      background: "#fafbfc",
-                    }}
-                  >
-                    {yearHolidays.map((holiday) => {
-                      const dateString = holiday.date.split("T")[0];
-                      const isSelected = selectedDates.has(dateString);
-                      const formattedDate = new Date(
-                        holiday.date
-                      ).toLocaleDateString("ja-JP", {
-                        month: "short",
-                        day: "numeric",
-                        weekday: "short",
-                      });
-
-                      return (
-                        <label
-                          key={holiday.id}
-                          aria-label={`${holiday.name} (${formattedDate})`}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
-                            padding: "8px",
-                            background: isSelected ? "#e3f1df" : "white",
-                            border: `1px solid ${isSelected ? "#008060" : "#e1e3e5"}`,
-                            borderRadius: "6px",
-                            cursor: "pointer",
-                            transition: "all 0.2s",
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => toggleHoliday(dateString)}
-                            style={{ accentColor: "#008060" }}
-                          />
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div
-                              style={{
-                                fontWeight: 500,
-                                fontSize: "13px",
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                              }}
-                            >
-                              {holiday.name}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: "12px",
-                                color: "#6c7179",
-                              }}
-                            >
-                              {formattedDate}
-                            </div>
-                          </div>
-                        </label>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-
-              <div style={{ marginTop: "8px" }}>
-                <s-button onClick={handleSaveHolidays}>
-                  祝日休業設定を保存
-                </s-button>
-              </div>
-            </>
-          )}
         </s-stack>
       </div>
 
@@ -330,7 +166,7 @@ export function HolidaySettingsSection({
             <s-button onClick={handleAddCustomHoliday}>追加</s-button>
           </s-stack>
 
-          {customHolidays.length > 0 && (
+          {customNonShippingDays.length > 0 && (
             <div style={{ marginTop: "16px" }}>
               <table
                 style={{
@@ -347,18 +183,15 @@ export function HolidaySettingsSection({
                   </tr>
                 </thead>
                 <tbody>
-                  {customHolidays.map((holiday) => (
-                    <tr
-                      key={holiday.id}
-                      style={{ borderTop: "1px solid #ddd" }}
-                    >
+                  {customNonShippingDays.map((day) => (
+                    <tr key={day.id} style={{ borderTop: "1px solid #ddd" }}>
                       <td style={{ padding: "8px" }}>
-                        {new Date(holiday.date).toLocaleDateString("ja-JP")}
+                        {new Date(day.date).toLocaleDateString("ja-JP")}
                       </td>
-                      <td style={{ padding: "8px" }}>{holiday.reason}</td>
+                      <td style={{ padding: "8px" }}>{day.reason}</td>
                       <td style={{ padding: "8px", textAlign: "center" }}>
                         <s-button
-                          onClick={() => handleDeleteHoliday(holiday.id)}
+                          onClick={() => handleDeleteHoliday(day.id)}
                           variant="tertiary"
                         >
                           削除

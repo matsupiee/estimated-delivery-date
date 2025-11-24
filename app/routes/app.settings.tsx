@@ -33,42 +33,26 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     regionalMap[rt.prefecture] = rt.shippingDays;
   });
 
-  const nonShippingDays = await prisma.nonShippingDay.findMany({
+  // 定期休業日（曜日）を取得
+  const weeklyNonShippingDays = await prisma.weeklyNonShippingDay.findMany({
+    where: { shop },
+  });
+
+  // カスタム休業日を取得
+  const customNonShippingDays = await prisma.customNonShippingDay.findMany({
     where: { shop },
     orderBy: { date: "asc" },
   });
 
-  // 祝日マスタを取得（今年と来年）
-  const currentYear = new Date().getFullYear();
-  const holidays = await prisma.holiday.findMany({
-    where: {
-      country: "Japan",
-      year: { in: [currentYear, currentYear + 1] },
-    },
-    orderBy: { date: "asc" },
-  });
-
-  // 休業日として登録されている祝日の日付を取得
-  const selectedHolidayDates = nonShippingDays
-    .filter((day) => day.reason?.startsWith("祝日:"))
-    .map((day) => day.date.toISOString().split("T")[0]);
-
   return {
     preparationDays: config?.preparationDays ?? 1,
     regionalMap,
-    nonShippingDays: nonShippingDays.map((day) => ({
+    weeklyNonShippingDays: weeklyNonShippingDays.map((day) => day.dayOfWeek),
+    customNonShippingDays: customNonShippingDays.map((day) => ({
       id: day.id,
       date: day.date.toISOString(),
       reason: day.reason,
-      dayOfWeek: day.dayOfWeek,
     })),
-    holidays: holidays.map((h) => ({
-      id: h.id,
-      date: h.date.toISOString(),
-      name: h.name,
-      year: h.year,
-    })),
-    selectedHolidayDates,
   };
 };
 
@@ -108,84 +92,36 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 
   if (actionType === "setWeeklyHolidays") {
-    const saturday = formData.get("saturday") === "true";
-    const sunday = formData.get("sunday") === "true";
+    const daysOfWeekJson = formData.get("daysOfWeek") as string;
+    const daysOfWeek: number[] = JSON.parse(daysOfWeekJson);
 
-    await prisma.nonShippingDay.deleteMany({
-      where: { shop, dayOfWeek: { not: null } },
+    // 既存の定期休業日を削除
+    await prisma.weeklyNonShippingDay.deleteMany({
+      where: { shop },
     });
 
-    const holidays = [];
-    if (saturday) {
-      holidays.push({
-        shop,
-        date: new Date("2025-01-01"),
-        dayOfWeek: 6,
-        reason: "定休日（土曜日）",
+    // 選択された曜日を登録
+    if (daysOfWeek.length > 0) {
+      await prisma.weeklyNonShippingDay.createMany({
+        data: daysOfWeek.map((dayOfWeek) => ({ shop, dayOfWeek })),
       });
-    }
-    if (sunday) {
-      holidays.push({
-        shop,
-        date: new Date("2025-01-01"),
-        dayOfWeek: 0,
-        reason: "定休日（日曜日）",
-      });
-    }
-    if (holidays.length > 0) {
-      await prisma.nonShippingDay.createMany({ data: holidays });
     }
     return { success: true, message: "定期休業日を保存しました" };
   }
 
   if (actionType === "addCustomHoliday") {
     const date = new Date(formData.get("date") as string);
-    const reason = formData.get("reason") as string;
-    await prisma.nonShippingDay.create({
-      data: { shop, date, reason, dayOfWeek: null },
+    const reason = (formData.get("reason") as string) || null;
+    await prisma.customNonShippingDay.create({
+      data: { shop, date, reason },
     });
     return { success: true, message: "休業日を追加しました" };
   }
 
   if (actionType === "deleteHoliday") {
     const id = formData.get("id") as string;
-    await prisma.nonShippingDay.delete({ where: { id } });
+    await prisma.customNonShippingDay.delete({ where: { id } });
     return { success: true, message: "休業日を削除しました" };
-  }
-
-  if (actionType === "saveHolidays") {
-    const selectedDatesJson = formData.get("selectedDates") as string;
-    const selectedDates: Array<{ date: string; name: string }> = JSON.parse(selectedDatesJson);
-
-    // 既存の祝日休業日を削除（"祝日:"で始まるもの）
-    await prisma.nonShippingDay.deleteMany({
-      where: {
-        shop,
-        reason: { startsWith: "祝日:" },
-      },
-    });
-
-    // 選択された祝日を休業日として登録
-    if (selectedDates.length > 0) {
-      await Promise.all(
-        selectedDates.map(({ date, name }) =>
-          prisma.nonShippingDay.upsert({
-            where: { shop_date: { shop, date: new Date(date) } },
-            create: {
-              shop,
-              date: new Date(date),
-              reason: `祝日: ${name}`,
-              dayOfWeek: null,
-            },
-            update: {
-              reason: `祝日: ${name}`,
-            },
-          })
-        )
-      );
-    }
-
-    return { success: true, message: "祝日の休業設定を保存しました" };
   }
 
   return { success: false };
@@ -317,9 +253,8 @@ export default function Settings() {
           onToggle={() => toggleSection("holidays")}
         >
           <HolidaySettingsSection
-            nonShippingDays={loaderData.nonShippingDays}
-            holidays={loaderData.holidays}
-            selectedHolidayDates={loaderData.selectedHolidayDates}
+            weeklyNonShippingDays={loaderData.weeklyNonShippingDays}
+            customNonShippingDays={loaderData.customNonShippingDays}
             shopify={shopify}
             onSubmit={handleHolidaySubmit}
           />

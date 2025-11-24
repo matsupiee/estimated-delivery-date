@@ -21,8 +21,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     prisma.shippingConfig.deleteMany({ where: { shop } }),
     // 地域別配送日数
     prisma.regionalShippingTime.deleteMany({ where: { shop } }),
-    // 発送休業日
-    prisma.nonShippingDay.deleteMany({ where: { shop } }),
+    // 定期休業日
+    prisma.weeklyNonShippingDay.deleteMany({ where: { shop } }),
+    // カスタム休業日
+    prisma.customNonShippingDay.deleteMany({ where: { shop } }),
   ]);
 
   console.log(`Deleted all data for shop: ${shop}`);

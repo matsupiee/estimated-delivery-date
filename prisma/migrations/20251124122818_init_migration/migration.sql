@@ -37,25 +37,22 @@ CREATE TABLE "RegionalShippingTime" (
 );
 
 -- CreateTable
-CREATE TABLE "NonShippingDay" (
+CREATE TABLE "WeeklyNonShippingDay" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    "shop" TEXT NOT NULL,
+    "dayOfWeek" INTEGER NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "CustomNonShippingDay" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
     "shop" TEXT NOT NULL,
     "date" DATETIME NOT NULL,
-    "reason" TEXT,
-    "dayOfWeek" INTEGER
-);
-
--- CreateTable
-CREATE TABLE "Holiday" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    "country" TEXT NOT NULL,
-    "date" DATETIME NOT NULL,
-    "name" TEXT NOT NULL,
-    "year" INTEGER NOT NULL
+    "reason" TEXT
 );
 
 -- CreateIndex
@@ -68,13 +65,13 @@ CREATE INDEX "RegionalShippingTime_shop_idx" ON "RegionalShippingTime"("shop");
 CREATE UNIQUE INDEX "RegionalShippingTime_shop_prefecture_key" ON "RegionalShippingTime"("shop", "prefecture");
 
 -- CreateIndex
-CREATE INDEX "NonShippingDay_shop_date_idx" ON "NonShippingDay"("shop", "date");
+CREATE INDEX "WeeklyNonShippingDay_shop_idx" ON "WeeklyNonShippingDay"("shop");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "NonShippingDay_shop_date_key" ON "NonShippingDay"("shop", "date");
+CREATE UNIQUE INDEX "WeeklyNonShippingDay_shop_dayOfWeek_key" ON "WeeklyNonShippingDay"("shop", "dayOfWeek");
 
 -- CreateIndex
-CREATE INDEX "Holiday_year_idx" ON "Holiday"("year");
+CREATE INDEX "CustomNonShippingDay_shop_date_idx" ON "CustomNonShippingDay"("shop", "date");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Holiday_country_date_key" ON "Holiday"("country", "date");
+CREATE UNIQUE INDEX "CustomNonShippingDay_shop_date_key" ON "CustomNonShippingDay"("shop", "date");

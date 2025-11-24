@@ -58,18 +58,6 @@ export function RegionSettingsSection({
     });
   };
 
-  const setDefaultValues = () => {
-    const defaultMap: Record<string, number> = {};
-    PREFECTURES.forEach((pref) => {
-      if (pref === "北海道" || pref === "沖縄県") {
-        defaultMap[pref] = 3;
-      } else {
-        defaultMap[pref] = 1;
-      }
-    });
-    onRegionalMapChange(() => defaultMap);
-  };
-
   const focusRegionInput = (region: RegionName) => {
     const target = regionInputRefs.current[region];
     if (target) {
@@ -106,10 +94,6 @@ export function RegionSettingsSection({
       <s-paragraph>
         地域単位で配送日数を入力すると、地図にも同じ色で反映されます。
       </s-paragraph>
-
-      <s-button onClick={setDefaultValues} variant="secondary">
-        デフォルト値を設定（北海道・沖縄: 3日、その他: 1日）
-      </s-button>
 
       <div
         style={{
@@ -199,7 +183,7 @@ export function RegionSettingsSection({
         </div>
 
         <s-button onClick={applyFactoryLeadTime} variant="secondary">
-          出荷元のリードタイムを適用
+          デフォルト値を適用
         </s-button>
       </div>
 

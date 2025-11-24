@@ -59,32 +59,29 @@ model RegionalShippingTime {
   @@index([shop])
 }
 
-// 発送休業日（ショップごとのカスタム休業日）
-model NonShippingDay {
+// 定期休業日（土曜日と日曜日など）
+model WeeklyNonShippingDay {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   shop      String
-  date      DateTime // 休業日
-  reason    String? // 理由（臨時休業、夏季休業など）
-  dayOfWeek Int? // 0=日曜, 6=土曜（定期休業用、nullなら単発休業）
+  dayOfWeek Int // 0=Sun ... 6=Sat
 
-  @@unique([shop, date])
-  @@index([shop, date])
+  @@unique([shop, dayOfWeek])
+  @@index([shop])
 }
 
-// 日本の祝日マスタ（全ショップ共通）
-model Holiday {
+// カスタム休業日（臨時休業など、直近1年の分だけ記録）
+model CustomNonShippingDay {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  country String // 国名
-  date    DateTime // 祝日の日付
-  name    String // 祝日名（元日、成人の日など）
-  year    Int // 年
+  shop   String
+  date   DateTime // 休業日
+  reason String? // 理由（臨時休業、夏季休業など）
 
-  @@unique([country, date])
-  @@index([year])
+  @@unique([shop, date])
+  @@index([shop, date])
 }

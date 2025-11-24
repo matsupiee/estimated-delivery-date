@@ -77,21 +77,20 @@ async function addBusinessDays(
   const currentDate = new Date(startDate);
   let addedDays = 0;
 
-  // 休業日データを事前に取得
-  const nonShippingDays = await prisma.nonShippingDay.findMany({
+  // 定期休業日（曜日）を取得
+  const weeklyNonShippingDays = await prisma.weeklyNonShippingDay.findMany({
     where: { shop },
   });
 
-  const japaneseHolidays = await prisma.holiday.findMany({
-    where: {
-      year: currentDate.getFullYear(),
-    },
+  // カスタム休業日を取得
+  const customNonShippingDays = await prisma.customNonShippingDay.findMany({
+    where: { shop },
   });
 
   while (addedDays < businessDays) {
     currentDate.setDate(currentDate.getDate() + 1);
 
-    if (!isNonShippingDay(currentDate, nonShippingDays, japaneseHolidays)) {
+    if (!isNonShippingDay(currentDate, weeklyNonShippingDays, customNonShippingDays)) {
       addedDays++;
     }
   }
@@ -102,32 +101,20 @@ async function addBusinessDays(
 /**
  * 指定日が休業日かどうかを判定
  * @param date 判定する日付
- * @param nonShippingDays ショップの休業日リスト
- * @param japaneseHolidays 日本の祝日リスト
+ * @param weeklyNonShippingDays 定期休業日（曜日）リスト
+ * @param customNonShippingDays カスタム休業日リスト
  * @returns 休業日の場合true
  */
 function isNonShippingDay(
   date: Date,
-  nonShippingDays: Array<{
-    date: Date;
-    dayOfWeek: number | null;
-  }>,
-  japaneseHolidays: Array<{ date: Date }>,
+  weeklyNonShippingDays: Array<{ dayOfWeek: number }>,
+  customNonShippingDays: Array<{ date: Date }>,
 ): boolean {
   const dateString = formatDateToYyyyMmDd(date);
   const dayOfWeek = date.getDay(); // 0=日曜, 6=土曜
 
-  // 1. 祝日チェック
-  const isHoliday = japaneseHolidays.some(
-    (holiday) => formatDateToYyyyMmDd(holiday.date) === dateString,
-  );
-
-  if (isHoliday) {
-    return true;
-  }
-
-  // 2. ショップの定期休業（毎週土日など）
-  const hasWeeklyHoliday = nonShippingDays.some(
+  // 1. 定期休業（毎週土日など）
+  const hasWeeklyHoliday = weeklyNonShippingDays.some(
     (day) => day.dayOfWeek === dayOfWeek,
   );
 
@@ -135,10 +122,9 @@ function isNonShippingDay(
     return true;
   }
 
-  // 3. ショップの単発休業
-  const hasCustomHoliday = nonShippingDays.some(
-    (day) =>
-      day.dayOfWeek === null && formatDateToYyyyMmDd(day.date) === dateString,
+  // 2. カスタム休業日
+  const hasCustomHoliday = customNonShippingDays.some(
+    (day) => formatDateToYyyyMmDd(day.date) === dateString,
   );
 
   return hasCustomHoliday;
