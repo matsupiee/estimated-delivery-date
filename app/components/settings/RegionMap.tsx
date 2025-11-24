@@ -2,7 +2,7 @@ import {
   REGION_COLORS,
   REGION_SVG_PATHS,
   type RegionName,
-} from "../lib/constants";
+} from "../../lib/constants";
 
 type RegionMapProps = {
   regionValues: Record<RegionName, number | "">;
