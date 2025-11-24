@@ -55,6 +55,16 @@ CREATE TABLE "CustomNonShippingDay" (
     "reason" TEXT
 );
 
+-- CreateTable
+CREATE TABLE "IpGeolocationCache" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    "ip" TEXT NOT NULL,
+    "prefecture" TEXT NOT NULL,
+    "expiresAt" DATETIME NOT NULL
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "ShippingConfig_shop_key" ON "ShippingConfig"("shop");
 
@@ -75,3 +85,9 @@ CREATE INDEX "CustomNonShippingDay_shop_date_idx" ON "CustomNonShippingDay"("sho
 
 -- CreateIndex
 CREATE UNIQUE INDEX "CustomNonShippingDay_shop_date_key" ON "CustomNonShippingDay"("shop", "date");
+
+-- CreateIndex
+CREATE INDEX "IpGeolocationCache_ip_idx" ON "IpGeolocationCache"("ip");
+
+-- CreateIndex
+CREATE INDEX "IpGeolocationCache_expiresAt_idx" ON "IpGeolocationCache"("expiresAt");

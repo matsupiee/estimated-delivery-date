@@ -1,18 +1,33 @@
 import { PREFECTURES, type Prefecture } from "app/lib/constants";
+import { prisma } from "app/servers/db.server";
 
 /**
- * IPアドレスから都道府県を推定する
+ * IPアドレスから都道府県を推定する（キャッシュ機能付き）
  * @param ip IPアドレス（省略時はリクエスト元のIPを使用）
  * @returns 都道府県名、またはnull
  */
 export async function getPrefectureFromIP(
   ip?: string,
 ): Promise<Prefecture | null> {
+  // IPアドレスがない場合はnullを返す
+  if (!ip) {
+    return null;
+  }
+
   try {
-    // ipapi.coを使用してIPアドレスから地域情報を取得
-    const apiUrl = ip
-      ? `https://ipapi.co/${ip}/json/`
-      : "https://ipapi.co/json/";
+    // 1. キャッシュから取得を試みる
+    const cached = await prisma.ipGeolocationCache.findFirst({
+      where: { ip },
+      orderBy: { expiresAt: "desc" },
+    });
+
+    if (cached && cached.expiresAt > new Date()) {
+      // キャッシュが有効な場合
+      return cached.prefecture as Prefecture;
+    }
+
+    // 2. キャッシュがない、または期限切れの場合、APIを呼び出す
+    const apiUrl = `https://ipapi.co/${ip}/json/`;
 
     const response = await fetch(apiUrl, {
       headers: {
@@ -20,8 +35,24 @@ export async function getPrefectureFromIP(
       },
     });
 
+    // 3. 429エラー（レート制限）の場合、期限切れのキャッシュでも返す
+    if (response.status === 429) {
+      console.warn(
+        "IP geolocation API rate limit (429). Using expired cache if available.",
+      );
+      if (cached) {
+        // 期限切れでもキャッシュがあれば返す
+        return cached.prefecture as Prefecture;
+      }
+      return null;
+    }
+
     if (!response.ok) {
       console.error("IP geolocation API error:", response.status);
+      // エラー時も期限切れのキャッシュがあれば返す
+      if (cached) {
+        return cached.prefecture as Prefecture;
+      }
       return null;
     }
 
@@ -36,9 +67,37 @@ export async function getPrefectureFromIP(
     // ipapi.coは日本の場合、region_codeに都道府県コード（ISO 3166-2:JP）を返す
     const prefecture = mapRegionCodeToPrefecture(data.region_code, data.region);
 
+    if (prefecture) {
+      // 4. 成功した場合、キャッシュに保存（30日間有効）
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 30);
+
+      await prisma.ipGeolocationCache.create({
+        data: {
+          ip,
+          prefecture,
+          expiresAt,
+        },
+      });
+    }
+
     return prefecture;
   } catch (error) {
     console.error("IP geolocation error:", error);
+
+    // エラー時も期限切れのキャッシュがあれば返す
+    try {
+      const cached = await prisma.ipGeolocationCache.findFirst({
+        where: { ip },
+        orderBy: { expiresAt: "desc" },
+      });
+      if (cached) {
+        return cached.prefecture as Prefecture;
+      }
+    } catch (cacheError) {
+      console.error("Failed to get cached IP geolocation:", cacheError);
+    }
+
     return null;
   }
 }

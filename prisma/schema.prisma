@@ -85,3 +85,17 @@ model CustomNonShippingDay {
   @@unique([shop, date])
   @@index([shop, date])
 }
+
+// IP geolocationキャッシュ（レート制限対策）
+model IpGeolocationCache {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ip         String
+  prefecture String // 都道府県名
+  expiresAt  DateTime // キャッシュの有効期限（30日後）
+
+  @@index([ip])
+  @@index([expiresAt])
+}
