@@ -37,3 +37,6 @@ next-env.d.ts
 
 # react-router
 .react-router
+
+# prisma
+prisma/dev.sqlite
