@@ -38,6 +38,21 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     orderBy: { date: "asc" },
   });
 
+  // 祝日マスタを取得（今年と来年）
+  const currentYear = new Date().getFullYear();
+  const holidays = await prisma.holiday.findMany({
+    where: {
+      country: "Japan",
+      year: { in: [currentYear, currentYear + 1] },
+    },
+    orderBy: { date: "asc" },
+  });
+
+  // 休業日として登録されている祝日の日付を取得
+  const selectedHolidayDates = nonShippingDays
+    .filter((day) => day.reason?.startsWith("祝日:"))
+    .map((day) => day.date.toISOString().split("T")[0]);
+
   return {
     preparationDays: config?.preparationDays ?? 1,
     regionalMap,
@@ -47,6 +62,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       reason: day.reason,
       dayOfWeek: day.dayOfWeek,
     })),
+    holidays: holidays.map((h) => ({
+      id: h.id,
+      date: h.date.toISOString(),
+      name: h.name,
+      year: h.year,
+    })),
+    selectedHolidayDates,
   };
 };
 
@@ -131,40 +153,39 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return { success: true, message: "休業日を削除しました" };
   }
 
-  if (actionType === "importJapaneseHolidays") {
-    const holidays2025 = [
-      { date: new Date("2025-01-01"), name: "元日" },
-      { date: new Date("2025-01-13"), name: "成人の日" },
-      { date: new Date("2025-02-11"), name: "建国記念の日" },
-      { date: new Date("2025-02-23"), name: "天皇誕生日" },
-      { date: new Date("2025-03-20"), name: "春分の日" },
-      { date: new Date("2025-04-29"), name: "昭和の日" },
-      { date: new Date("2025-05-03"), name: "憲法記念日" },
-      { date: new Date("2025-05-04"), name: "みどりの日" },
-      { date: new Date("2025-05-05"), name: "こどもの日" },
-      { date: new Date("2025-07-21"), name: "海の日" },
-      { date: new Date("2025-08-11"), name: "山の日" },
-      { date: new Date("2025-09-15"), name: "敬老の日" },
-      { date: new Date("2025-09-23"), name: "秋分の日" },
-      { date: new Date("2025-10-13"), name: "スポーツの日" },
-      { date: new Date("2025-11-03"), name: "文化の日" },
-      { date: new Date("2025-11-23"), name: "勤労感謝の日" },
-    ];
-    await Promise.all(
-      holidays2025.map((holiday) =>
-        prisma.holiday.upsert({
-          where: { country_date: { country: "Japan", date: holiday.date } },
-          create: {
-            country: "Japan",
-            date: holiday.date,
-            name: holiday.name,
-            year: 2025,
-          },
-          update: { name: holiday.name },
-        })
-      )
-    );
-    return { success: true, message: "2025年の祝日を登録しました" };
+  if (actionType === "saveHolidays") {
+    const selectedDatesJson = formData.get("selectedDates") as string;
+    const selectedDates: Array<{ date: string; name: string }> = JSON.parse(selectedDatesJson);
+
+    // 既存の祝日休業日を削除（"祝日:"で始まるもの）
+    await prisma.nonShippingDay.deleteMany({
+      where: {
+        shop,
+        reason: { startsWith: "祝日:" },
+      },
+    });
+
+    // 選択された祝日を休業日として登録
+    if (selectedDates.length > 0) {
+      await Promise.all(
+        selectedDates.map(({ date, name }) =>
+          prisma.nonShippingDay.upsert({
+            where: { shop_date: { shop, date: new Date(date) } },
+            create: {
+              shop,
+              date: new Date(date),
+              reason: `祝日: ${name}`,
+              dayOfWeek: null,
+            },
+            update: {
+              reason: `祝日: ${name}`,
+            },
+          })
+        )
+      );
+    }
+
+    return { success: true, message: "祝日の休業設定を保存しました" };
   }
 
   return { success: false };
@@ -297,6 +318,8 @@ export default function Settings() {
         >
           <HolidaySettingsSection
             nonShippingDays={loaderData.nonShippingDays}
+            holidays={loaderData.holidays}
+            selectedHolidayDates={loaderData.selectedHolidayDates}
             shopify={shopify}
             onSubmit={handleHolidaySubmit}
           />
