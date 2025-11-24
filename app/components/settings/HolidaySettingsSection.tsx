@@ -166,24 +166,24 @@ export function HolidaySettingsSection({
             <s-button onClick={handleAddCustomHoliday}>追加</s-button>
           </s-stack>
 
-          {customNonShippingDays.length > 0 && (
-            <div style={{ marginTop: "16px" }}>
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  border: "1px solid #ddd",
-                }}
-              >
-                <thead>
-                  <tr style={{ backgroundColor: "#f5f5f5" }}>
-                    <th style={{ padding: "8px", textAlign: "left" }}>日付</th>
-                    <th style={{ padding: "8px", textAlign: "left" }}>理由</th>
-                    <th style={{ padding: "8px", textAlign: "center" }}>操作</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {customNonShippingDays.map((day) => (
+          <div style={{ marginTop: "16px" }}>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                border: "1px solid #ddd",
+              }}
+            >
+              <thead>
+                <tr style={{ backgroundColor: "#f5f5f5" }}>
+                  <th style={{ padding: "8px", textAlign: "left" }}>日付</th>
+                  <th style={{ padding: "8px", textAlign: "left" }}>理由</th>
+                  <th style={{ padding: "8px", textAlign: "center" }}>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {customNonShippingDays.length > 0 ? (
+                  customNonShippingDays.map((day) => (
                     <tr key={day.id} style={{ borderTop: "1px solid #ddd" }}>
                       <td style={{ padding: "8px" }}>
                         {new Date(day.date).toLocaleDateString("ja-JP")}
@@ -228,11 +228,24 @@ export function HolidaySettingsSection({
                         </button>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  ))
+                ) : (
+                  <tr style={{ borderTop: "1px solid #ddd" }}>
+                    <td
+                      colSpan={3}
+                      style={{
+                        padding: "24px 8px",
+                        textAlign: "center",
+                        color: "#6d7175",
+                      }}
+                    >
+                      カスタム休業日はまだ登録されていません
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </s-stack>
       </div>
     </s-stack>
