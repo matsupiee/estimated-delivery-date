@@ -4,7 +4,7 @@ import type {
   HeadersFunction,
   LoaderFunctionArgs,
 } from "react-router";
-import { useFetcher, useLoaderData, useSearchParams } from "react-router";
+import { useFetcher, useLoaderData, useSearchParams, Link } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../servers/shopify.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
@@ -259,6 +259,58 @@ export default function Settings() {
             onSubmit={handleHolidaySubmit}
           />
         </AccordionSection>
+
+        {/* ホームへ戻る導線 */}
+        <div
+          style={{
+            marginTop: "32px",
+            padding: "24px",
+            background: "#f6f6f7",
+            borderRadius: "8px",
+            textAlign: "center",
+          }}
+        >
+          <p
+            style={{
+              margin: "0 0 16px 0",
+              fontSize: "14px",
+              color: "#6d7175",
+            }}
+          >
+            設定が完了したらホームに戻ってプレビューを確認できます
+          </p>
+          <Link
+            to="/app"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "10px 20px",
+              background: "#008060",
+              color: "white",
+              textDecoration: "none",
+              borderRadius: "6px",
+              fontWeight: 500,
+              fontSize: "14px",
+            }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+            ホームに戻る
+          </Link>
+        </div>
       </div>
     </s-page>
   );
