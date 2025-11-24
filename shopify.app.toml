@@ -2,35 +2,37 @@
 
 client_id = "61a7fa91775c8ad92e12dde851943473"
 name = "estimated-delivery-date"
-application_url = "https://estimated-delivery-date.fly.dev"
+application_url = "https://example.com"
 embedded = true
 
 [build]
 automatically_update_urls_on_dev = true
+include_config_on_deploy = true
 
 [webhooks]
 api_version = "2026-01"
 
-  [[webhooks.subscriptions]]
-  topics = [ "app/uninstalled" ]
-  uri = "/webhooks/app/uninstalled"
+  [webhooks.privacy_compliance]
+  customer_deletion_url = "/webhooks/customers/redact"
+  customer_data_request_url = "/webhooks/customers/data_request"
+  shop_deletion_url = "/webhooks/shop/redact"
 
   [[webhooks.subscriptions]]
   topics = [ "app/scopes_update" ]
   uri = "/webhooks/app/scopes_update"
 
-[webhooks.privacy_compliance]
-customer_data_request_url = "/webhooks/customers/data_request"
-customer_deletion_url = "/webhooks/customers/redact"
-shop_deletion_url = "/webhooks/shop/redact"
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = ["read_shop", "write_metaobjects", "read_metaobjects"]
+scopes = "write_products"
 
 [auth]
-redirect_urls = [
-  "https://estimated-delivery-date.fly.dev/auth/callback",
-  "https://estimated-delivery-date.fly.dev/auth/shopify/callback",
-  "https://estimated-delivery-date.fly.dev/api/auth/callback"
-]
+redirect_urls = [ "https://example.com/api/auth" ]
+
+[app_proxy]
+url = "https://example.com"
+subpath = "delivery"
+prefix = "estimated-delivery-date-app"

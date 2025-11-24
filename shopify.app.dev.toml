@@ -1,0 +1,40 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+client_id = "61a7fa91775c8ad92e12dde851943473"
+name = "estimated-delivery-date"
+# 開発時はapplication_urlは自動設定されるので不要だが適当な値を入れておく必要がある
+application_url = "https://example.com"
+embedded = true
+
+[build]
+# 開発時にShopify CLIが自動でトンネルURLを作成・更新してくれる
+automatically_update_urls_on_dev = true
+
+
+[webhooks]
+api_version = "2026-01"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/scopes_update" ]
+  uri = "/webhooks/app/scopes_update"
+
+[webhooks.privacy_compliance]
+customer_data_request_url = "/webhooks/customers/data_request"
+customer_deletion_url = "/webhooks/customers/redact"
+shop_deletion_url = "/webhooks/shop/redact"
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "write_app_proxy"
+
+[auth]
+# 開発時はredirect_urlsは自動設定されるので不要だが適当な値を入れておく必要がある
+redirect_urls = ["https://example.com/api/auth"]
+
+[app_proxy]
+url = "/app-proxy"
+prefix = "apps"
+subpath = "estimated-delivery-date-app"

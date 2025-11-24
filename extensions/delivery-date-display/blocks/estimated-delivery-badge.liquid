@@ -1,6 +1,6 @@
 {%- comment -%}
   Theme app block that shows a small badge with an estimated delivery date.
-  Fetches delivery date from API based on customer's IP address.
+  Fetches delivery date from App Proxy based on customer's IP address.
 {%- endcomment -%}
 
 {{ 'delivery-date-badge.css' | asset_url | stylesheet_tag }}
@@ -13,72 +13,42 @@
 </div>
 
 <script>
-(function() {
-  const badgeElement = document.getElementById('edd-badge-{{ block.id }}');
-  const textElement = badgeElement.querySelector('.edd-badge__text');
+  (function() {
+    const badgeElement = document.getElementById('edd-badge-{{ block.id }}');
+    const textElement = badgeElement.querySelector('.edd-badge__text');
 
-  // APIエンドポイントURL（優先順位: 手動設定 > メタデータ > 自動計算）
-  let apiUrl = '{{ block.settings.api_url | default: "" }}';
-  const shopDomain = '{{ shop.permanent_domain }}';
-  
-  // 手動設定がない場合、メタデータから取得を試みる
-  if (!apiUrl) {
-    const metafieldUrl = '{{ shop.metafields.estimated_delivery_date.api_url }}';
-    if (metafieldUrl && metafieldUrl !== '') {
-      apiUrl = metafieldUrl;
-    }
-  }
+    // App Proxy経由のURL（ストアのドメインを使用）
+    const proxyUrl = '/apps/estimated-delivery-date-app/delivery-date';
 
-  // デバッグ用ログ
-  console.log('API URL:', apiUrl);
-  console.log('Shop Domain:', shopDomain);
-  console.log('Manual setting:', '{{ block.settings.api_url }}');
-  console.log('Metafield:', '{{ shop.metafields.estimated_delivery_date.api_url }}');
+    // APIから配送予定日を取得
+    fetch(proxyUrl)
+      .then(function(response) {
+        if (!response.ok) {
+          throw new Error(response.error);
+        }
 
-  if (!apiUrl) {
-    textElement.textContent = '設定エラー: APIのURLが設定されていません。アプリの設定画面にアクセスしてください。';
-    textElement.classList.remove('edd-badge__loading');
-    return;
-  }
-
-  // APIから配送予定日を取得
-  fetch(apiUrl + '?shop=' + encodeURIComponent(shopDomain))
-    .then(function(response) {
-      if (!response.ok) {
-        console.log('Response not ok:', response);
-        return response.json().then(function(data) {
-          throw new Error(data.message || '配送予定日を取得できませんでした');
-        });
-      }
-      return response.json();
-    })
-    .then(function(data) {
-      if (data.formattedDate) {
-        textElement.textContent = '{{ 'delivery_date_badge.arrives_by' | t }}' + data.formattedDate;
-      } else {
-        textElement.textContent = '配送予定日を取得できませんでした';
-      }
-      textElement.classList.remove('edd-badge__loading');
-    })
-    .catch(function(error) {
-      console.error('Delivery date fetch error:', error);
-      textElement.textContent = error.message || '配送予定日を取得できませんでした';
-      textElement.classList.remove('edd-badge__loading');
-    });
-})();
+        return response.json();
+      })
+      .then(function(data) {
+        if (data.formattedDate) {
+          textElement.textContent = '{{ 'delivery_date_badge.arrives_by' | t }}' + data.formattedDate;
+        } else {
+          textElement.textContent = '配送予定日を取得できませんでした';
+        }
+        textElement.classList.remove('edd-badge__loading');
+      })
+      .catch(function(error) {
+        console.error('Delivery date fetch error:', error);
+        textElement.textContent = error.message || '配送予定日を取得できませんでした';
+        textElement.classList.remove('edd-badge__loading');
+      });
+  })();
 </script>
 
 {% schema %}
 {
   "name": "Estimated delivery badge",
   "target": "section",
-  "settings": [
-    {
-      "type": "text",
-      "id": "api_url",
-      "label": "API URL",
-      "info": "配送予定日を取得するAPIのURL（例: https://your-app.fly.dev/api/public/delivery-date）"
-    }
-  ]
+  "settings": []
 }
 {% endschema %}

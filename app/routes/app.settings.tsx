@@ -11,7 +11,7 @@ import { boundary } from "@shopify/shopify-app-react-router/server";
 import { prisma } from "app/servers/db.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const { session, admin } = await authenticate.admin(request);
+  const { session } = await authenticate.admin(request);
   const shop = session.shop;
 
   // 既存の設定を取得
@@ -19,72 +19,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     where: { shop },
   });
 
-  // アプリのURLを自動的に取得してメタデータとして保存
-  const appUrl = process.env.SHOPIFY_APP_URL || "";
-  const apiUrl = appUrl ? `${appUrl}/api/public/delivery-date` : "";
-
-  console.log("apiUrl", apiUrl);
-  
-  if (appUrl && apiUrl) {
-    // ShopifyのメタデータにAPI URLを保存
-    try {
-      // まずShopのIDを取得
-      const shopQuery = await admin.graphql(
-        `#graphql
-          query {
-            shop {
-              id
-            }
-          }`
-      );
-      const shopData = await shopQuery.json();
-      const shopId = shopData.data?.shop?.id;
-      
-      if (shopId) {
-        const response = await admin.graphql(
-          `#graphql
-            mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
-              metafieldsSet(metafields: $metafields) {
-                metafields {
-                  id
-                  namespace
-                  key
-                  value
-                }
-                userErrors {
-                  field
-                  message
-                }
-              }
-            }`,
-          {
-            variables: {
-              metafields: [
-                {
-                  namespace: "estimated_delivery_date",
-                  key: "api_url",
-                  value: apiUrl,
-                  type: "single_line_text_field",
-                  ownerId: shopId,
-                },
-              ],
-            },
-          },
-        );
-        
-        const result = await response.json();
-        if (result.data?.metafieldsSet?.userErrors?.length > 0) {
-          console.error("メタデータ保存エラー:", result.data.metafieldsSet.userErrors);
-        }
-      }
-    } catch (error) {
-      console.error("メタデータ保存に失敗しました:", error);
-    }
-  }
-
   return {
     preparationDays: config?.preparationDays ?? 1,
-    apiUrl,
   };
 };
 

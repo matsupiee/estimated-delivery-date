@@ -11,6 +11,8 @@ import { getClientIP } from "app/servers/ip.server";
  * 認証不要で呼び出せるエンドポイント
  */
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+  console.log({ request });
+  
   const url = new URL(request.url);
   const shop = url.searchParams.get("shop");
 

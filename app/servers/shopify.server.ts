@@ -12,7 +12,7 @@ const shopify = shopifyApp({
   apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
   apiVersion: ApiVersion.October25,
   // ここに書くだけでなく、shopify.app.tomlでも設定する必要があるので注意が必要です
-  scopes: ["read_shop", "write_metaobjects", "read_metaobjects"],
+  scopes: ["write_app_proxy"],
   appUrl: process.env.SHOPIFY_APP_URL || "",
   authPathPrefix: "/auth",
   sessionStorage: new PrismaSessionStorage(prisma),

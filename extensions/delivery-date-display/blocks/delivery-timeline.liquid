@@ -57,88 +57,72 @@
 </div>
 
 <script>
-(function() {
-  const timelineElement = document.getElementById('edd-timeline-{{ block.id }}');
-  const titleElement = timelineElement.querySelector('.edd-timeline__title');
-  const orderedDateEl = timelineElement.querySelector('[data-step="ordered"]');
-  const shippedDateEl = timelineElement.querySelector('[data-step="shipped"]');
-  const deliveryDateEl = timelineElement.querySelector('[data-step="delivery"]');
+  (function() {
+    const timelineElement = document.getElementById('edd-timeline-{{ block.id }}');
+    const titleElement = timelineElement.querySelector('.edd-timeline__title');
+    const orderedDateEl = timelineElement.querySelector('[data-step="ordered"]');
+    const shippedDateEl = timelineElement.querySelector('[data-step="shipped"]');
+    const deliveryDateEl = timelineElement.querySelector('[data-step="delivery"]');
 
-  // APIエンドポイントURL
-  let apiUrl = '{{ block.settings.api_url | default: "" }}';
-  const shopDomain = '{{ shop.permanent_domain }}';
+    // App Proxy経由のURL（ストアのドメインを使用）
+    const proxyUrl = '/apps/estimated-delivery-date-app/delivery-date';
 
-  // 手動設定がない場合、メタデータから取得を試みる
-  if (!apiUrl) {
-    const metafieldUrl = '{{ shop.metafields.estimated_delivery_date.api_url }}';
-    if (metafieldUrl && metafieldUrl !== '') {
-      apiUrl = metafieldUrl;
+    // 発送までの日数の設定
+    const processingDays = parseInt('{{ block.settings.processing_days | default: 2 }}', 10);
+
+    // 日付をフォーマットする関数
+    function formatDate(date) {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const day = date.getDate();
+      const suffix = (day === 1 || day === 21 || day === 31) ? 'st' :
+                     (day === 2 || day === 22) ? 'nd' :
+                     (day === 3 || day === 23) ? 'rd' : 'th';
+      return day + suffix + ' ' + months[date.getMonth()];
     }
-  }
 
-  // 発送までの日数と配送日数の設定
-  const processingDays = parseInt('{{ block.settings.processing_days | default: 2 }}', 10);
+    // 日付を加算する関数
+    function addDays(date, days) {
+      const result = new Date(date);
+      result.setDate(result.getDate() + days);
+      return result;
+    }
 
-  if (!apiUrl) {
-    titleElement.textContent = '設定エラー: APIのURLが設定されていません';
-    titleElement.classList.remove('edd-timeline__loading');
-    return;
-  }
+    // APIから配送予定日を取得
+    fetch(proxyUrl)
+      .then(function(response) {
+        console.log({response})
+        if (!response.ok) {
+          throw new Error('配送予定日を取得できませんでした');
+        }
+        return response.json();
+      })
+      .then(function(data) {
+        if (data.formattedDate) {
+          const today = new Date();
+          const shippedDate = addDays(today, processingDays);
 
-  // 日付をフォーマットする関数
-  function formatDate(date) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const day = date.getDate();
-    const suffix = (day === 1 || day === 21 || day === 31) ? 'st' :
-                   (day === 2 || day === 22) ? 'nd' :
-                   (day === 3 || day === 23) ? 'rd' : 'th';
-    return day + suffix + ' ' + months[date.getMonth()];
-  }
+          // 注文日（今日）
+          orderedDateEl.textContent = formatDate(today);
 
-  // 日付を加算する関数
-  function addDays(date, days) {
-    const result = new Date(date);
-    result.setDate(result.getDate() + days);
-    return result;
-  }
+          // 発送日
+          shippedDateEl.textContent = formatDate(shippedDate);
 
-  // APIから配送予定日を取得
-  fetch(apiUrl + '?shop=' + encodeURIComponent(shopDomain))
-    .then(function(response) {
-      if (!response.ok) {
-        return response.json().then(function(data) {
-          throw new Error(data.message || '配送予定日を取得できませんでした');
-        });
-      }
-      return response.json();
-    })
-    .then(function(data) {
-      if (data.formattedDate) {
-        const today = new Date();
-        const shippedDate = addDays(today, processingDays);
+          // 配送予定日（APIから取得）
+          deliveryDateEl.textContent = data.formattedDate;
 
-        // 注文日（今日）
-        orderedDateEl.textContent = formatDate(today);
-
-        // 発送日
-        shippedDateEl.textContent = formatDate(shippedDate);
-
-        // 配送予定日（APIから取得）
-        deliveryDateEl.textContent = data.formattedDate;
-
-        // タイトルを更新
-        titleElement.textContent = '{{ 'delivery_timeline.title_prefix' | t }}' + data.formattedDate;
-      } else {
-        titleElement.textContent = '配送予定日を取得できませんでした';
-      }
-      titleElement.classList.remove('edd-timeline__loading');
-    })
-    .catch(function(error) {
-      console.error('Delivery date fetch error:', error);
-      titleElement.textContent = error.message || '配送予定日を取得できませんでした';
-      titleElement.classList.remove('edd-timeline__loading');
-    });
-})();
+          // タイトルを更新
+          titleElement.textContent = '{{ 'delivery_timeline.title_prefix' | t }}' + data.formattedDate;
+        } else {
+          titleElement.textContent = '配送予定日を取得できませんでした';
+        }
+        titleElement.classList.remove('edd-timeline__loading');
+      })
+      .catch(function(error) {
+        console.error('Delivery date fetch error:', error);
+        titleElement.textContent = error.message || '配送予定日を取得できませんでした';
+        titleElement.classList.remove('edd-timeline__loading');
+      });
+  })();
 </script>
 
 {% schema %}
@@ -146,12 +130,6 @@
   "name": "Delivery Timeline",
   "target": "section",
   "settings": [
-    {
-      "type": "text",
-      "id": "api_url",
-      "label": "API URL",
-      "info": "配送予定日を取得するAPIのURL（例: https://your-app.fly.dev/api/public/delivery-date）"
-    },
     {
       "type": "range",
       "id": "processing_days",
