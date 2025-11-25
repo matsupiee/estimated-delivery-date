@@ -80,149 +80,156 @@ export default function Index() {
         設定
       </s-button>
 
-      <div style={{ maxWidth: "900px", display: "flex", flexDirection: "column", gap: "32px", marginTop: "24px" }}>
-        {/* 設定状況 */}
-        <s-section heading="現在の設定">
+      <div
+        style={{
+          maxWidth: "1080px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "28px",
+          marginTop: "20px",
+        }}
+      >
+        <div
+          style={{
+            background: "linear-gradient(120deg, #0c3c60, #1f6f7e 55%, #35b0a6)",
+            color: "#f6f9fb",
+            borderRadius: "16px",
+            padding: "22px 24px",
+            boxShadow: "0 12px 30px rgba(8, 40, 64, 0.18)",
+            display: "grid",
+            gridTemplateColumns: "1.1fr 0.9fr",
+            gap: "16px",
+            alignItems: "center",
+          }}
+        >
+          <div>
+            <div style={{ fontSize: "13px", opacity: 0.82, letterSpacing: "0.02em" }}>
+              ストア配送オペレーション
+            </div>
+            <div style={{ fontSize: "22px", fontWeight: 700, marginTop: "4px" }}>
+              配送予定日の精度と体験をワンビューで確認
+            </div>
+            <div style={{ fontSize: "14px", opacity: 0.9, marginTop: "10px" }}>
+              準備日数や地域別日数、休業日の反映状況をまとめました。設定を調整してより正確な期待値を届けましょう。
+            </div>
+          </div>
+        </div>
+
+        <s-section heading="設定サマリー">
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-              gap: "16px",
+              gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))",
+              gap: "14px",
             }}
           >
-            {/* 準備日数 */}
-            <div
-              style={{
-                padding: "16px",
-                background: hasBasicSettings ? "#e3f1df" : "#fbeae5",
-                borderRadius: "8px",
-                border: `1px solid ${hasBasicSettings ? "#008060" : "#d72c0d"}`,
-              }}
-            >
-              <div
-                style={{ fontSize: "13px", color: "#6d7175", marginBottom: "4px" }}
-              >
-                準備日数
-              </div>
-              <div style={{ fontSize: "24px", fontWeight: 600 }}>
-                {hasBasicSettings ? `${preparationDays}日` : "未設定"}
-              </div>
-            </div>
-
-             {/* 地域別設定 */}
-             <div
-              style={{
-                padding: "16px",
-                background: hasRegionalSettings ? "#e3f1df" : "#fbeae5",
-                borderRadius: "8px",
-                border: `1px solid ${hasRegionalSettings ? "#008060" : "#d72c0d"}`,
-              }}
-            >
-              <div
-                style={{ fontSize: "13px", color: "#6d7175", marginBottom: "4px" }}
-              >
-                地域別配送日数
-              </div>
-              <div style={{ fontSize: "16px", fontWeight: 500 }}>
-                {hasRegionalSettings ? "設定済み ✓" : "未設定"}
-              </div>
-            </div>
-
-            {/* 定期休業日 */}
-            <div
-              style={{
-                padding: "16px",
-                background: "#f6f6f7",
-                borderRadius: "8px",
-                border: "1px solid #e1e3e5",
-              }}
-            >
-              <div
-                style={{ fontSize: "13px", color: "#6d7175", marginBottom: "4px" }}
-              >
-                定期休業日
-              </div>
-              <div style={{ fontSize: "16px", fontWeight: 500 }}>
-                {weeklyNonShippingDays.length > 0 ? weeklyHolidayNames : "なし"}
-              </div>
-            </div>
-
-            {/* カスタム休業日 */}
-            <div
-              style={{
-                padding: "16px",
-                background: "#f6f6f7",
-                borderRadius: "8px",
-                border: "1px solid #e1e3e5",
-              }}
-            >
-              <div
-                style={{ fontSize: "13px", color: "#6d7175", marginBottom: "4px" }}
-              >
-                カスタム休業日
-              </div>
-              <div style={{ fontSize: "24px", fontWeight: 600 }}>
-                {customNonShippingDaysCount}件
-              </div>
-            </div>
+            <InfoCard
+              title="準備日数"
+              value={hasBasicSettings ? `${preparationDays}日` : "未設定"}
+              hint="入荷・梱包にかかる日数"
+              tone={hasBasicSettings ? "positive" : "critical"}
+            />
+            <InfoCard
+              title="地域別配送日数"
+              value={hasRegionalSettings ? `設定済み` : "未設定"}
+              hint="都道府県ごとの配送リードタイム"
+              tone={hasRegionalSettings ? "positive" : "critical"}
+            />
+            <InfoCard
+              title="定期休業日"
+              value={weeklyNonShippingDays.length > 0 ? weeklyHolidayNames : "なし"}
+              hint="毎週の非出荷日"
+              tone="neutral"
+            />
+            <InfoCard
+              title="カスタム休業日"
+              value={`${customNonShippingDaysCount}件`}
+              hint="季節要因や臨時休業"
+              tone={customNonShippingDaysCount > 0 ? "neutral" : "subdued"}
+            />
           </div>
 
           {!isConfigured && (
             <div
               style={{
-                marginTop: "16px",
-                padding: "12px 16px",
-                background: "#fbeae5",
-                borderRadius: "8px",
-                color: "#d72c0d",
+                marginTop: "14px",
+                padding: "12px 14px",
+                background: "#fff5f3",
+                border: "1px solid #f5c5bb",
+                borderRadius: "10px",
+                color: "#b12b09",
                 fontSize: "14px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
               }}
             >
-              ⚠️ 配送予定日を計算するには、準備日数と地域別配送日数の設定が必要です。
+              <span style={{ fontSize: "18px", lineHeight: 1 }}>⚠️</span>
+              <span>配送予定日を計算するには、準備日数と地域別配送日数の設定が必要です。</span>
             </div>
           )}
         </s-section>
 
-        {/* プレビュー */}
         <s-section heading="配送予定日プレビュー">
           <s-paragraph>
             今日（{formatDate(new Date())}）に注文した場合の配送予定日です。
           </s-paragraph>
 
-          <div style={{ marginTop: "16px" }}>
+          <div
+            style={{
+              marginTop: "14px",
+              border: "1px solid #dfe3e8",
+              borderRadius: "12px",
+              overflow: "hidden",
+              boxShadow: "0 6px 18px rgba(17, 34, 51, 0.08)",
+            }}
+          >
             <table
               style={{
                 width: "100%",
                 borderCollapse: "collapse",
-                border: "1px solid #e1e3e5",
+                fontSize: "14px",
               }}
             >
               <thead>
-                <tr style={{ background: "#f6f6f7" }}>
-                  <th style={{ padding: "12px 16px", textAlign: "left" }}>
+                <tr style={{ background: "#f8fafc" }}>
+                  <th style={{ padding: "12px 16px", textAlign: "left", color: "#4a5560" }}>
                     配送先
                   </th>
-                  <th style={{ padding: "12px 16px", textAlign: "left" }}>
+                  <th style={{ padding: "12px 16px", textAlign: "left", color: "#4a5560" }}>
                     配送予定日
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {previews.map((preview) => (
+                {previews.map((preview, index) => (
                   <tr
                     key={preview.prefecture}
-                    style={{ borderTop: "1px solid #e1e3e5" }}
+                    style={{
+                      background: index % 2 === 0 ? "#ffffff" : "#f9fbfd",
+                      borderTop: "1px solid #e5e8eb",
+                    }}
                   >
-                    <td style={{ padding: "12px 16px" }}>{preview.prefecture}</td>
+                    <td style={{ padding: "12px 16px", fontWeight: 500 }}>
+                      {preview.prefecture}
+                    </td>
                     <td style={{ padding: "12px 16px" }}>
                       {!isConfigured ? (
-                        <span style={{ color: "#6d7175" }}>-</span>
+                        <span style={{ color: "#8a8f98" }}>-</span>
                       ) : preview.date ? (
-                        <span style={{ fontWeight: 500, color: "#008060" }}>
+                        <span
+                          style={{
+                            fontWeight: 600,
+                            color: "#0a5f5a",
+                            background: "#e6f4f2",
+                            padding: "6px 10px",
+                            borderRadius: "999px",
+                          }}
+                        >
                           {formatDate(new Date(preview.date))}
                         </span>
                       ) : (
-                        <span style={{ color: "#6d7175" }}>
+                        <span style={{ color: "#8a8f98" }}>
                           {preview.error || "計算できません"}
                         </span>
                       )}
@@ -236,20 +243,62 @@ export default function Index() {
           {isConfigured && (
             <div
               style={{
-                marginTop: "16px",
-                padding: "12px 16px",
-                background: "#e3f1df",
-                borderRadius: "8px",
-                color: "#008060",
+                marginTop: "14px",
+                padding: "12px 14px",
+                background: "#e7f4ec",
+                borderRadius: "10px",
+                color: "#0f5132",
                 fontSize: "14px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
               }}
             >
-              ✓ 設定が完了しています。ストアで配送予定日が表示されます。
+              <span style={{ fontSize: "18px", lineHeight: 1 }}>✓</span>
+              <span>設定が完了しています。ストアで配送予定日が表示されます。</span>
             </div>
           )}
         </s-section>
       </div>
     </s-page>
+  );
+}
+
+function InfoCard({
+  title,
+  value,
+  hint,
+  tone = "neutral",
+}: {
+  title: string;
+  value: string;
+  hint: string;
+  tone?: "positive" | "critical" | "neutral" | "subdued";
+}) {
+  const tones = {
+    positive: { border: "#b4e2c2", bg: "#f2fbf6" },
+    critical: { border: "#f7c5bc", bg: "#fff6f3" },
+    neutral: { border: "#dfe3e8", bg: "#f9fbfd" },
+    subdued: { border: "#e5e8eb", bg: "#ffffff" },
+  } as const;
+
+  return (
+    <div
+      style={{
+        padding: "16px 18px",
+        borderRadius: "12px",
+        border: `1px solid ${tones[tone].border}`,
+        background: tones[tone].bg,
+        display: "flex",
+        flexDirection: "column",
+        gap: "6px",
+        minHeight: "80px",
+      }}
+    >
+      <div style={{ fontSize: "13px", color: "#6a707a" }}>{title}</div>
+      <div style={{ fontSize: "22px", fontWeight: 700 }}>{value}</div>
+      <div style={{ fontSize: "12px", color: "#8a8f98" }}>{hint}</div>
+    </div>
   );
 }
 
