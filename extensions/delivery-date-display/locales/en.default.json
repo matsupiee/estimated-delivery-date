@@ -4,11 +4,19 @@
     "arrives_by": "Arrives by ",
     "loading": "Loading..."
   },
-  "delivery_timeline": {
-    "title": "Calculating delivery date...",
-    "title_prefix": "Estimated Delivery Date ",
-    "ordered": "Ordered",
-    "shipped": "Shipped",
-    "delivery": "Delivery"
+  "delivery_simple_text": {
+    "label": "Delivery:",
+    "loading": "Loading...",
+    "error": "Unavailable"
+  },
+  "delivery_inline_icon": {
+    "label": "Order Now Get It Between",
+    "loading": "Loading...",
+    "error": "Unavailable"
+  },
+  "delivery_minimal_line": {
+    "prefix": "Get it by ",
+    "loading": "...",
+    "error": "Unavailable"
   }
 }

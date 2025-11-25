@@ -1,0 +1,66 @@
+{%- comment -%}
+  Inline delivery badge with icon.
+  Simple one-line design with truck icon.
+{%- endcomment -%}
+
+{{ 'delivery-inline-icon.css' | asset_url | stylesheet_tag }}
+
+<div class="edd-inline-icon" id="edd-inline-icon-{{ block.id }}">
+  <svg class="edd-inline-icon__truck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <rect x="1" y="6" width="15" height="10" rx="2"/>
+    <path d="M16 8h4l3 4v4h-7V8z"/>
+    <circle cx="5.5" cy="18.5" r="2.5"/>
+    <circle cx="18.5" cy="18.5" r="2.5"/>
+  </svg>
+  <span class="edd-inline-icon__text">
+    <span class="edd-inline-icon__label">{{ 'delivery_inline_icon.label' | t }}</span>
+    <span class="edd-inline-icon__date edd-inline-icon__loading" data-delivery-date>{{ 'delivery_inline_icon.loading' | t }}</span>
+  </span>
+</div>
+
+<script>
+  (function() {
+    const element = document.getElementById('edd-inline-icon-{{ block.id }}');
+    const dateElement = element.querySelector('[data-delivery-date]');
+
+    const proxyUrl = '/apps/estimated-delivery-date-app/delivery-date';
+
+    fetch(proxyUrl)
+      .then(function(response) {
+        if (!response.ok) throw new Error('Failed to fetch delivery date');
+        return response.json();
+      })
+      .then(function(data) {
+        if (data.formattedDate) {
+          dateElement.textContent = data.formattedDate;
+        } else {
+          dateElement.textContent = '{{ 'delivery_inline_icon.error' | t }}';
+        }
+        dateElement.classList.remove('edd-inline-icon__loading');
+      })
+      .catch(function(error) {
+        console.error('Delivery date fetch error:', error);
+        dateElement.textContent = '{{ 'delivery_inline_icon.error' | t }}';
+        dateElement.classList.remove('edd-inline-icon__loading');
+      });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Delivery - Inline Icon",
+  "target": "section",
+  "settings": [
+    {
+      "type": "range",
+      "id": "processing_days",
+      "label": "Processing Days",
+      "info": "注文から発送までの日数",
+      "min": 1,
+      "max": 7,
+      "step": 1,
+      "default": 2
+    }
+  ]
+}
+{% endschema %}

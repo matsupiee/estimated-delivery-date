@@ -1,0 +1,59 @@
+{%- comment -%}
+  Ultra-minimal single line delivery badge.
+  Smallest possible footprint.
+{%- endcomment -%}
+
+{{ 'delivery-minimal-line.css' | asset_url | stylesheet_tag }}
+
+<div class="edd-minimal-line" id="edd-minimal-line-{{ block.id }}">
+  <span class="edd-minimal-line__content">
+    {{ 'delivery_minimal_line.prefix' | t }}<span class="edd-minimal-line__date edd-minimal-line__loading" data-delivery-date>{{ 'delivery_minimal_line.loading' | t }}</span>
+  </span>
+</div>
+
+<script>
+  (function() {
+    const element = document.getElementById('edd-minimal-line-{{ block.id }}');
+    const dateElement = element.querySelector('[data-delivery-date]');
+
+    const proxyUrl = '/apps/estimated-delivery-date-app/delivery-date';
+
+    fetch(proxyUrl)
+      .then(function(response) {
+        if (!response.ok) throw new Error('Failed to fetch delivery date');
+        return response.json();
+      })
+      .then(function(data) {
+        if (data.formattedDate) {
+          dateElement.textContent = data.formattedDate;
+        } else {
+          dateElement.textContent = '{{ 'delivery_minimal_line.error' | t }}';
+        }
+        dateElement.classList.remove('edd-minimal-line__loading');
+      })
+      .catch(function(error) {
+        console.error('Delivery date fetch error:', error);
+        dateElement.textContent = '{{ 'delivery_minimal_line.error' | t }}';
+        dateElement.classList.remove('edd-minimal-line__loading');
+      });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Delivery - Minimal",
+  "target": "section",
+  "settings": [
+    {
+      "type": "range",
+      "id": "processing_days",
+      "label": "Processing Days",
+      "info": "注文から発送までの日数",
+      "min": 1,
+      "max": 7,
+      "step": 1,
+      "default": 2
+    }
+  ]
+}
+{% endschema %}

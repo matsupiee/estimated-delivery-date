@@ -1,4 +1,4 @@
-import { formatJapaneseDate } from "app/lib/format-date";
+import { formatDateByLocale } from "app/lib/format-date";
 import { getClientIP } from "app/servers/ip.server";
 import { authenticate } from "app/servers/shopify.server";
 import { getPrefectureFromIP } from "app/servers/ip-geolocation.server";
@@ -26,10 +26,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   try {
-    // 1. リクエストからIPアドレスを取得
+    // 1. リクエストからロケールを取得
+    const acceptLanguage = request.headers.get("Accept-Language") || "en";
+    const locale = acceptLanguage.split(",")[0].split("-")[0]; // 'ja-JP' -> 'ja', 'en-US' -> 'en'
+
+    // 2. リクエストからIPアドレスを取得
     const clientIP = getClientIP(request);
 
-    // 2. IPアドレスから都道府県を推定
+    // 3. IPアドレスから都道府県を推定
     const prefecture = await getPrefectureFromIP(clientIP || undefined);
 
     if (!prefecture) {
@@ -43,7 +47,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       );
     }
 
-    // 3. 配送予定日を計算
+    // 4. 配送予定日を計算
     const { date: deliveryDate, error } = await calculateDeliveryDate(
       shop,
       prefecture,
@@ -63,8 +67,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     return Response.json(
       {
         deliveryDate: deliveryDate.toISOString(),
-        formattedDate: formatJapaneseDate(deliveryDate),
+        formattedDate: formatDateByLocale(deliveryDate, locale),
         prefecture,
+        locale, // デバッグ用にロケールも返す
       },
       {
         headers: {

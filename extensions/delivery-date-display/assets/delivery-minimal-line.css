@@ -1,0 +1,27 @@
+.edd-minimal-line {
+  display: block;
+  font-family: inherit;
+}
+
+.edd-minimal-line__content {
+  display: inline;
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.edd-minimal-line__date {
+  font-weight: 600;
+  color: #111827;
+}
+
+.edd-minimal-line__loading {
+  opacity: 0.5;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .edd-minimal-line__content {
+    font-size: 0.8125rem;
+  }
+}

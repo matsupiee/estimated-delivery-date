@@ -1,0 +1,29 @@
+.edd-simple-text {
+  display: inline-block;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.edd-simple-text__label {
+  font-weight: 400;
+  color: #6b7280;
+}
+
+.edd-simple-text__date {
+  font-weight: 600;
+  color: #111827;
+  margin-left: 0.25rem;
+}
+
+.edd-simple-text__loading {
+  opacity: 0.5;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .edd-simple-text {
+    font-size: 0.875rem;
+  }
+}

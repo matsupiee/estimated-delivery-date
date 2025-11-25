@@ -1,0 +1,58 @@
+{%- comment -%}
+  Minimal text-only delivery date badge.
+  Clean and simple design.
+{%- endcomment -%}
+
+{{ 'delivery-simple-text.css' | asset_url | stylesheet_tag }}
+
+<div class="edd-simple-text" id="edd-simple-text-{{ block.id }}">
+  <span class="edd-simple-text__label">{{ 'delivery_simple_text.label' | t }}</span>
+  <span class="edd-simple-text__date edd-simple-text__loading" data-delivery-date>{{ 'delivery_simple_text.loading' | t }}</span>
+</div>
+
+<script>
+  (function() {
+    const element = document.getElementById('edd-simple-text-{{ block.id }}');
+    const dateElement = element.querySelector('[data-delivery-date]');
+
+    const proxyUrl = '/apps/estimated-delivery-date-app/delivery-date';
+
+    fetch(proxyUrl)
+      .then(function(response) {
+        if (!response.ok) throw new Error('Failed to fetch delivery date');
+        return response.json();
+      })
+      .then(function(data) {
+        if (data.formattedDate) {
+          dateElement.textContent = data.formattedDate;
+        } else {
+          dateElement.textContent = '{{ 'delivery_simple_text.error' | t }}';
+        }
+        dateElement.classList.remove('edd-simple-text__loading');
+      })
+      .catch(function(error) {
+        console.error('Delivery date fetch error:', error);
+        dateElement.textContent = '{{ 'delivery_simple_text.error' | t }}';
+        dateElement.classList.remove('edd-simple-text__loading');
+      });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Delivery - Simple Text",
+  "target": "section",
+  "settings": [
+    {
+      "type": "range",
+      "id": "processing_days",
+      "label": "Processing Days",
+      "info": "注文から発送までの日数",
+      "min": 1,
+      "max": 7,
+      "step": 1,
+      "default": 2
+    }
+  ]
+}
+{% endschema %}

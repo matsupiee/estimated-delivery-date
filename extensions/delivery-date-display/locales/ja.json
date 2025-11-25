@@ -4,11 +4,19 @@
     "arrives_by": "お届け予定：",
     "loading": "読み込み中..."
   },
-  "delivery_timeline": {
-    "title": "配送予定日を計算中...",
-    "title_prefix": "お届け予定日：",
-    "ordered": "注文",
-    "shipped": "発送",
-    "delivery": "お届け"
+  "delivery_simple_text": {
+    "label": "お届け予定：",
+    "loading": "読み込み中...",
+    "error": "取得できませんでした"
+  },
+  "delivery_inline_icon": {
+    "label": "お届け予定",
+    "loading": "読み込み中...",
+    "error": "取得できませんでした"
+  },
+  "delivery_minimal_line": {
+    "prefix": "お届け予定：",
+    "loading": "...",
+    "error": "取得できませんでした"
   }
 }
