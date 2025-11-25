@@ -1,0 +1,16 @@
+{
+  "blocks": {
+    "delivery_badge": {
+      "name": "Delivery Badge"
+    },
+    "delivery_simple_text": {
+      "name": "Delivery - Simple Text"
+    },
+    "delivery_inline_icon": {
+      "name": "Delivery - With Icon"
+    },
+    "delivery_minimal_line": {
+      "name": "Delivery - Minimal"
+    }
+  }
+}

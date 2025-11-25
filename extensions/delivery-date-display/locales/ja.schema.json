@@ -1,0 +1,16 @@
+{
+  "blocks": {
+    "delivery_badge": {
+      "name": "配送予定バッジ"
+    },
+    "delivery_simple_text": {
+      "name": "配送予定 - シンプルテキスト"
+    },
+    "delivery_inline_icon": {
+      "name": "配送予定 - アイコン付き"
+    },
+    "delivery_minimal_line": {
+      "name": "配送予定 - ミニマル"
+    }
+  }
+}
