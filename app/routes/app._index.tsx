@@ -76,10 +76,6 @@ export default function Index() {
 
   return (
     <s-page heading="配送予定日計算">
-      <s-button slot="primary-action" href="/app/settings">
-        設定
-      </s-button>
-
       <div
         style={{
           maxWidth: "1080px",
@@ -97,12 +93,12 @@ export default function Index() {
             padding: "22px 24px",
             boxShadow: "0 12px 30px rgba(8, 40, 64, 0.18)",
             display: "grid",
-            gridTemplateColumns: "1.1fr 0.9fr",
-            gap: "16px",
+            gridTemplateColumns: "1.15fr 0.85fr",
             alignItems: "center",
+            gap: '100px'
           }}
         >
-          <div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             <div style={{ fontSize: "13px", opacity: 0.82, letterSpacing: "0.02em" }}>
               ストア配送オペレーション
             </div>
@@ -113,6 +109,43 @@ export default function Index() {
               仕込み日数、都道府県ごとの配送日数、定期・臨時休業を一括管理し、購入時にわかりやすいお届け予定日を提示します。
             </div>
           </div>
+        </div>
+
+        <div>
+          <a
+            href="/app/settings"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "10px",
+              padding: "12px 18px",
+              borderRadius: "12px",
+              background: "linear-gradient(135deg, #fefefe, #eaf4ff)",
+              color: "#0f2336",
+              textDecoration: "none",
+              fontWeight: 700,
+              boxShadow: "0 10px 25px rgba(8, 40, 64, 0.22)",
+              border: "1px solid rgba(255,255,255,0.45)",
+            }}
+          >
+            <span>設定を開く</span>
+            <span
+              aria-hidden
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "26px",
+                height: "26px",
+                borderRadius: "50%",
+                background: "#0c3c60",
+                color: "#fefefe",
+                fontSize: "14px",
+              }}
+            >
+              →
+            </span>
+          </a>
         </div>
 
         <s-section heading="設定サマリー">
