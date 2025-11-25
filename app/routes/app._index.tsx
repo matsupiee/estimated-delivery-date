@@ -107,10 +107,10 @@ export default function Index() {
               ストア配送オペレーション
             </div>
             <div style={{ fontSize: "22px", fontWeight: 700, marginTop: "4px" }}>
-              配送予定日の精度と体験をワンビューで確認
+              正確な「お届け予定」を自動生成
             </div>
             <div style={{ fontSize: "14px", opacity: 0.9, marginTop: "10px" }}>
-              準備日数や地域別日数、休業日の反映状況をまとめました。設定を調整してより正確な期待値を届けましょう。
+              仕込み日数、都道府県ごとの配送日数、定期・臨時休業を一括管理し、購入時にわかりやすいお届け予定日を提示します。
             </div>
           </div>
         </div>
