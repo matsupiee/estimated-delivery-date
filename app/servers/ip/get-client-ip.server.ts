@@ -1,7 +1,7 @@
 /**
  * リクエストからIPアドレスを取得
  */
-export function getClientIP(request: Request): string | null {
+export function getClientIp(request: Request): string | null {
   // Shopifyやプロキシ経由の場合、X-Forwarded-ForヘッダーからIPを取得
   const forwardedFor = request.headers.get("X-Forwarded-For");
   if (forwardedFor) {

@@ -1,7 +1,7 @@
 import { formatDateByLocale } from "app/lib/format-date";
-import { getClientIP } from "app/servers/ip.server";
+import { getClientIp } from "app/servers/ip/get-client-ip.server";
 import { authenticate } from "app/servers/shopify.server";
-import { getPrefectureFromIP } from "app/servers/ip-geolocation.server";
+import { getPrefectureFromIp } from "app/servers/ip/ip-geolocation.server";
 import { calculateDeliveryDate } from "app/servers/delivery-calculator.server";
 import { LoaderFunctionArgs } from "react-router";
 
@@ -10,8 +10,6 @@ import { LoaderFunctionArgs } from "react-router";
  * Shopifyのドメイン経由でアクセスされる: https://{shop}.myshopify.com/apps/delivery-date
  */
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  console.log({ test: "----------10000000---------" });
-
   // リクエスト認証を行う(HMAC署名を含む)
   await authenticate.public.appProxy(request);
 
@@ -31,10 +29,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const locale = acceptLanguage.split(",")[0].split("-")[0]; // 'ja-JP' -> 'ja', 'en-US' -> 'en'
 
     // 2. リクエストからIPアドレスを取得
-    const clientIP = getClientIP(request);
+    const clientIp = getClientIp(request);
 
     // 3. IPアドレスから都道府県を推定
-    const prefecture = await getPrefectureFromIP(clientIP || undefined);
+    const prefecture = await getPrefectureFromIp(clientIp || undefined);
 
     if (!prefecture) {
       return Response.json(

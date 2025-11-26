@@ -1,7 +1,8 @@
 {
     "cSpell.words": [
         "cuid",
-        "Geolocation"
+        "Geolocation",
+        "Maxmind"
     ],
     "chatgpt.openOnStartup": false
 }
