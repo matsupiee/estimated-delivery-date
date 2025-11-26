@@ -1,25 +1,30 @@
+# アプリ名
 app = "estimated-delivery-date"
-primary_region = "nrt"
+primary_region = "nrt" # nrt=東京
 
 [build]
+# Dockerfileを使用してビルド（デフォルト設定）
 
 [env]
   PORT = "3000"
+  # SQLiteデータベースのパス（永続ボリュームにマウント）
   DATABASE_URL = "file:/data/dev.sqlite"
 
 [http_service]
   internal_port = 3000
   force_https = true
-  auto_stop_machines = "stop"
-  auto_start_machines = true
-  min_machines_running = 0
+  auto_stop_machines = false
+  min_machines_running = 1
+  # HTTPサーバーとして公開するのはappプロセスだけにする
   processes = ["app"]
 
+# VM仕様: 1GB RAM、共有CPU x 1コア
 [[vm]]
   memory = "1gb"
   cpu_kind = "shared"
   cpus = 1
 
+# 永続ボリューム: SQLiteデータベースを /data に永続化してデプロイ後もデータを保持
 [mounts]
   source = "data"
   destination = "/data"
