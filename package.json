@@ -2,7 +2,7 @@
   "name": "estimated-delivery-date",
   "private": true,
   "scripts": {
-    "postinstall": "sh scripts/download-geoip.sh",
+    "download-geoip": "sh scripts/download-geoip.sh",
     "build": "react-router build",
     "dev": "shopify app dev --config dev",
     "config:link": "shopify app config link",

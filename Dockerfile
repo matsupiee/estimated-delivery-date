@@ -1,5 +1,7 @@
 FROM node:20-alpine
-RUN apk add --no-cache openssl
+
+# curlはGeoIPデータをダウンロードするために必要
+RUN apk add --no-cache openssl curl
 
 EXPOSE 3000
 
@@ -10,7 +12,6 @@ ENV NODE_ENV=production
 COPY package.json package-lock.json* ./
 
 # lockfile どおりに production 依存だけ をインストール
-# npm postinstall も実行される
 # cache cleanで、キャッシュを強制削除
 RUN npm ci --omit=dev && npm cache clean --force
 
@@ -21,6 +22,6 @@ RUN npm run build
 # Prisma Clientを生成
 RUN npx prisma generate
 
-# 起動時にマイグレーションを適用してからサーバーを起動
-# && で連結することで、マイグレーションが失敗したらサーバーが起動しないようになる
-CMD ["sh", "-c", "npx prisma migrate deploy && npm run start"]
+# runtime（アプリ起動時）にGeoIPデータをダウンロードする(ここでやれば、ライセンスキーがビルドログに露出する恐れが減る)
+# && で連結することで、マイグレーションなどが失敗したらサーバーが起動しない
+CMD ["sh", "-c", "npm run download-geoip && npx prisma migrate deploy && npm run start"]
