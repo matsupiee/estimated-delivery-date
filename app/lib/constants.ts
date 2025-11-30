@@ -1,3 +1,5 @@
+export const CONTACT_EMAIL_TO = "cs.estimated.delivery.app@gmail.com";
+
 /**
  * 日本の都道府県一覧
  * クライアントサイドでも使用可能な定数

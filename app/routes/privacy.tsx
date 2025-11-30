@@ -1,3 +1,5 @@
+import { CONTACT_EMAIL_TO } from "app/lib/constants";
+
 export default function Privacy() {
   return (
     <div style={{
@@ -20,7 +22,7 @@ export default function Privacy() {
           本アプリ「配送予定日計算」（以下「本アプリ」）は、個人開発者が提供するShopifyアプリです。
         </p>
         <ul>
-          <li>連絡先: h83688215@gmail.com</li>
+          <li>連絡先: cs.estimated.delivery.app@gmail.com</li>
         </ul>
       </Section>
 
@@ -188,7 +190,7 @@ export default function Privacy() {
       <Section title="12. お問い合わせ">
         <p>プライバシーに関するご質問・ご要望は、以下までご連絡ください。</p>
         <ul>
-          <li>メールアドレス: h83688215@gmail.com</li>
+          <li>メールアドレス: {CONTACT_EMAIL_TO}</li>
         </ul>
       </Section>
 

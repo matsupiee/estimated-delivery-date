@@ -1,3 +1,5 @@
+import { CONTACT_EMAIL_TO } from "app/lib/constants";
+
 export default function Terms() {
   return (
     <div style={{
@@ -232,7 +234,7 @@ export default function Terms() {
       <Section title="16. お問い合わせ">
         <p>本規約に関するご質問は、以下までご連絡ください。</p>
         <ul>
-          <li>メールアドレス: h83688215@gmail.com</li>
+          <li>メールアドレス: {CONTACT_EMAIL_TO}</li>
         </ul>
       </Section>
 

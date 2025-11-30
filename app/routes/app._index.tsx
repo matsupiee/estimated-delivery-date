@@ -111,7 +111,7 @@ export default function Index() {
           </div>
         </div>
 
-        <div>
+        <div style={{ display: "flex", gap: "12px" }}>
           <Link
             to="/app/settings"
             style={{
@@ -146,6 +146,35 @@ export default function Index() {
               →
             </span>
           </Link>
+
+          <a
+            href="https://forms.gle/hiA9cjeh3GVvFEAS8"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "10px",
+              padding: "12px 18px",
+              borderRadius: "12px",
+              background: "linear-gradient(135deg, #ffffff, #f0f0f0)",
+              color: "#0f2336",
+              textDecoration: "none",
+              fontWeight: 600,
+              boxShadow: "0 6px 18px rgba(0, 0, 0, 0.1)",
+              border: "1px solid rgba(0,0,0,0.08)",
+            }}
+          >
+            <span>お問い合わせ</span>
+            <span
+              aria-hidden
+              style={{
+                fontSize: "14px",
+              }}
+            >
+              ↗
+            </span>
+          </a>
         </div>
 
         <s-section heading="設定サマリー">
