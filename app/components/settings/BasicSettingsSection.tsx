@@ -39,37 +39,41 @@ export function BasicSettingsSection({
         <s-text>営業日</s-text>
       </s-stack>
 
-      {preparationDays === 0 && (
-        <s-stack direction="block" gap="base">
-          <s-text>出荷締め時間:</s-text>
-          <s-text tone="auto">
-            この時間までの注文は当日発送扱い、以降は翌営業日発送扱いになります。
-          </s-text>
-          <s-stack direction="inline" gap="base">
-            <input
-              type="time"
-              value={sameDayShippingCutoffTime ?? ""}
-              onChange={(e) =>
-                onSameDayShippingCutoffTimeChange(e.target.value || null)
-              }
-              style={{
-                padding: "8px",
-                border: "1px solid #ccc",
-                borderRadius: "4px",
-                width: "120px",
-              }}
-            />
-            {sameDayShippingCutoffTime && (
-              <s-button
-                variant="tertiary"
-                onClick={() => onSameDayShippingCutoffTimeChange(null)}
-              >
-                クリア
-              </s-button>
-            )}
-          </s-stack>
+      <s-stack direction="block" gap="base">
+        <s-text>出荷締め時間:</s-text>
+        <s-text tone="auto">
+          {preparationDays === 0
+            ? "この時間までの注文は当日発送扱い、以降は翌営業日発送扱いになります。"
+            : "発送準備日数が0日の場合のみ設定可能です。"}
+        </s-text>
+        <s-stack direction="inline" gap="base">
+          <input
+            type="time"
+            value={sameDayShippingCutoffTime ?? ""}
+            onChange={(e) =>
+              onSameDayShippingCutoffTimeChange(e.target.value || null)
+            }
+            disabled={preparationDays !== 0}
+            style={{
+              padding: "8px",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+              width: "120px",
+              opacity: preparationDays !== 0 ? 0.5 : 1,
+              cursor: preparationDays !== 0 ? "not-allowed" : "auto",
+            }}
+          />
+          {sameDayShippingCutoffTime && (
+            <s-button
+              variant="tertiary"
+              onClick={() => onSameDayShippingCutoffTimeChange(null)}
+              disabled={preparationDays !== 0}
+            >
+              クリア
+            </s-button>
+          )}
         </s-stack>
-      )}
+      </s-stack>
 
       <s-button onClick={onSave} {...(isLoading ? { loading: true } : {})}>
         保存
