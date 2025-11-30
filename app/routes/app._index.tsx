@@ -1,5 +1,5 @@
 import type { HeadersFunction, LoaderFunctionArgs } from "react-router";
-import { useLoaderData } from "react-router";
+import { useLoaderData, Link } from "react-router";
 import { authenticate } from "../servers/shopify.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { prisma } from "app/servers/db.server";
@@ -112,8 +112,8 @@ export default function Index() {
         </div>
 
         <div>
-          <a
-            href="/app/settings"
+          <Link
+            to="/app/settings"
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -145,7 +145,7 @@ export default function Index() {
             >
               →
             </span>
-          </a>
+          </Link>
         </div>
 
         <s-section heading="設定サマリー">
