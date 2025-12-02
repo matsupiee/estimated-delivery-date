@@ -7,6 +7,8 @@ import { authenticate } from "../servers/shopify.server";
  * このアプリは顧客の個人データを保存していないため、空レスポンスを返す
  */
 export const action = async ({ request }: ActionFunctionArgs) => {
+  console.log("Received customers/redact webhook");
+  
   const { shop, topic, payload } = await authenticate.webhook(request);
 
   console.log(`Received ${topic} webhook for ${shop}`);

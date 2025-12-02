@@ -3,6 +3,8 @@ import { authenticate } from "../servers/shopify.server";
 import { prisma } from "app/servers/db.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
+  console.log("Received app/uninstalled webhook");
+  
   const { shop, session, topic } = await authenticate.webhook(request);
 
   console.log(`Received ${topic} webhook for ${shop}`);

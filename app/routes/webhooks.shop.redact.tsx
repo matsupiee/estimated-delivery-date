@@ -8,6 +8,8 @@ import { prisma } from "../servers/db.server";
  * 該当ストアに関連する全データを削除する
  */
 export const action = async ({ request }: ActionFunctionArgs) => {
+  console.log("Received shop/redact webhook");
+  
   const { shop, topic, payload } = await authenticate.webhook(request);
 
   console.log(`Received ${topic} webhook for ${shop}`);
