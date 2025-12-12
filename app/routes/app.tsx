@@ -19,6 +19,7 @@ export default function App() {
       <s-app-nav>
         <s-link href="/app">ホーム</s-link>
         <s-link href="/app/settings">設定</s-link>
+        <s-link href="/app/guide">ガイド</s-link>
       </s-app-nav>
       <Outlet />
     </AppProvider>
