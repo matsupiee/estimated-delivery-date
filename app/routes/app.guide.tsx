@@ -1,8 +1,18 @@
-import type { HeadersFunction } from "react-router";
-import { Link } from "react-router";
+import type { HeadersFunction, LoaderFunctionArgs } from "react-router";
+import { Link, useLoaderData } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
+import { authenticate } from "app/servers/shopify.server";
+
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const { session } = await authenticate.admin(request);
+  const shop = session.shop;
+  return {
+    shop
+  };
+};
 
 export default function Guide() {
+  const { shop } = useLoaderData<typeof loader>();
 
   return (
     <s-page heading="初期設定ガイド">
@@ -129,6 +139,45 @@ export default function Guide() {
             >
               <div style={{ fontSize: "16px", fontWeight: 600, marginBottom: "12px" }}>
                 ステップ1: テーマエディタを開く
+              </div>
+              <div style={{ fontSize: "14px", lineHeight: 1.6, marginBottom: "16px" }}>
+                以下のボタンをクリックして、テーマエディタを開いてください。
+              </div>
+              <div>
+                <a
+                  href={`https://admin.shopify.com/store/${shop.replace(".myshopify.com", "")}/themes/current/editor`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "12px 20px",
+                    background: "#008060",
+                    color: "white",
+                    textDecoration: "none",
+                    borderRadius: "8px",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    <polyline points="15 3 21 3 21 9" />
+                    <line x1="10" y1="14" x2="21" y2="3" />
+                  </svg>
+                  テーマエディタを開く
+                </a>
               </div>
 
               <div style={{ marginTop: "24px" }}>
